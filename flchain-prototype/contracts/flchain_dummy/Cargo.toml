@@ -1,0 +1,27 @@
+[package]
+name = "flchain_dummy"
+version = "0.0.0"
+authors = ["you"]
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/flchain_dummy.rs"
+
+[dependencies]
+chrono = "0.4.31"
+
+[dependencies.multiversx-sc]
+version = "0.45.2"
+
+[dev-dependencies]
+num-bigint = "0.4.2"
+
+[dev-dependencies.multiversx-sc-scenario]
+version = "0.45.2"
+
+[workspace]
+members = [
+    ".",
+    "meta",
+]

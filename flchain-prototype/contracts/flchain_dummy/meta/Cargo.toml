@@ -1,0 +1,12 @@
+[package]
+name = "flchain_dummy-meta"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies.flchain_dummy]
+path = ".."
+
+[dependencies.multiversx-sc-meta]
+version = "0.45.2"
+default-features = false

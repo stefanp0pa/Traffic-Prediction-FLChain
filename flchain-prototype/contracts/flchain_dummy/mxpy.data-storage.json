@@ -1,0 +1,7 @@
+{
+    "*": {
+        "router-address": "WARNING  cli.data: Always review --expression parameters before executing this command!                              cli_data.py:40\nerd1qqqqqqqqqqqqqpgq5fqj294099nurngdz9rzgv7du0n6h4vedttshsdl08",
+        "address-devnet": "WARNING  cli.data: Always review --expression parameters before executing this command!                                                                                            cli_data.py:40\nerd1qqqqqqqqqqqqqpgqs80m9r27j5un8v3kpm7zzx2kmdsay53pmgyqpnh426",
+        "deployTransaction-devnet": "WARNING  cli.data: Always review --expression parameters before executing this command!                                                                                            cli_data.py:40\n16e6eadb40d0881890e4bb96a574d841803c411eb48d2213a2eba3678a38ab6c"
+    }
+}
