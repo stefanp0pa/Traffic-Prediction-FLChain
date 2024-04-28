@@ -1,0 +1,10 @@
+// JSON file for a global model, stored on the IPFS
+{	
+    "version": "ca98e3", // unique version reference (like a commit hash)
+    "aggregated_local_updates_addr": [
+        { "center_node": 1, "width": 2,
+            "file_addr": "ipfs_Uiaj3", "contributor_addr": "aa45e" },
+        { "center_node": 3, "width": 2,
+            "file_addr": "ipfs_3j2j3", "contributor_addr": "aa123" }
+    ]
+}

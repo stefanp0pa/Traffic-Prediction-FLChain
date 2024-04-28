@@ -1,0 +1,22 @@
+// JSON file for a local update, stored on the IPFS
+{
+    "previous_version": "ab123c", // unique version reference (like a commit hash)
+    "algorithm_id": "bc56a", // we can support multiple algorithms on our network
+    "center_node_id": "node_1", // the training center node
+    "subgraph_width": 2, // the width of the subgraph starting from the center node
+    "weights": [
+        { "layer": 0, "sizes": [100, 2], "weights": [] },
+        { "layer": 1, "sizes": [2, 30], "weights": [] }
+    ],
+    "biases": [
+        { "layer": 0, "sizes": [2], "biases": [] },
+        { "layer": 1, "sizes": [30], "biases": [] }
+    ],
+    "user_addr": "erdU7312sd", // user wallet address
+    "timestamp": 1234567890, // timestamp of the model upload
+    "used_data_samples": [ "ipfs_Acd1234", "ipfs_Cj4212" ],
+    "initial_accuracy": 0.85, // accuracy of the model before validation
+    "evaluated_accuracy": 0.78, // accuracy of the model after validation
+    "validator_addr": ["validator_addr_1", "validator_addr_2"],
+    "version": "bc56a" // unique version reference (like a commit hash)
+}

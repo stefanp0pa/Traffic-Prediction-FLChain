@@ -1,0 +1,14 @@
+// JSON file for a data sample, stored on the IPFS
+{	
+	"author": "<wallet_addr>",
+    "city_id": "r432dfg", // unique reference of the city
+    "node_id": "1321sdf", // unique reference of the traffic node
+	"data" : [
+		{ "avg_speed": 60, "cars_count": 23, "timestamp": 123411231 },
+		{ "avg_speed": 25, "cars_count": 42, "timestamp": 123411241 }
+	],
+	"validator_addr": ["validator_addr_1", "validator_addr_2"],
+	"min_timestamp": 123411231,
+	"max_timestamp": 123611231,
+	"number_of_rows": 2
+}
