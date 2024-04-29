@@ -1,0 +1,12 @@
+[package]
+name = "trafficflchain-meta"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies.trafficflchain]
+path = ".."
+
+[dependencies.multiversx-sc-meta]
+version = "0.45.2"
+default-features = false
