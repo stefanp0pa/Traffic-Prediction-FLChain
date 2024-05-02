@@ -40,13 +40,61 @@ pub trait Trafficflchain {
             timestamp,
             hash,
         };
-        self.graph_networks(city_id).insert(graph);
+        require!(
+            self.graph_networks(city_id).is_empty(),
+            "Network already exists, please clear it first."
+        );
+        self.graph_networks(city_id).set(graph);
         self.network_setup_event(city_id);
     }
 
+    #[endpoint]
+    fn clear_network(&self, city_id: u64) {
+        require!(
+            !self.graph_networks(city_id).is_empty(),
+            "Network does not exist."
+        );
+        require!(
+            self.blockchain().get_caller() == self.graph_networks(city_id).get().owner,
+            "Only the owner can clear the network."
+        );
+
+        self.graph_networks(city_id).clear();
+        self.network_cleared_event(city_id);
+    }
+
     #[view]
-    fn get_network_storage_addr(&self, city_id: u64) -> ManagedBuffer<Self::Api> {
-        self.graph_networks(city_id).get_by_index(1).storage_addr
+    fn get_serialized_network_data(&self, city_id: u64) -> ManagedBuffer<Self::Api> {
+        let graph = self.graph_networks(city_id).get();
+
+        let mut vertices_buff = ManagedBuffer::new();
+        let _ = graph.vertices_count.top_encode(&mut vertices_buff);
+        let mut edges_buff = ManagedBuffer::new();
+        let _ = graph.edges_count.top_encode(&mut edges_buff);
+        let mut owner_buff = ManagedBuffer::new();
+        let _ = graph.owner.top_encode(&mut owner_buff);
+        let mut storage_addr_buff = ManagedBuffer::new();
+        let _ = graph.storage_addr.top_encode(&mut storage_addr_buff);
+        let mut timestamp_buff = ManagedBuffer::new();
+        let _ = graph.timestamp.top_encode(&mut timestamp_buff);
+        let mut hash_buff = ManagedBuffer::new();
+        let _ = graph.hash.top_encode(&mut hash_buff);
+        let delimiter = ManagedBuffer::from(b"\0\0\0\0");
+        let mut serialized_attributes = ManagedBuffer::new();
+
+        let _ = serialized_attributes.append(&vertices_buff);
+        let _ = serialized_attributes.append(&delimiter);
+        let _ = serialized_attributes.append(&edges_buff);
+        let _ = serialized_attributes.append(&delimiter);
+        let _ = serialized_attributes.append(&owner_buff);
+        let _ = serialized_attributes.append(&delimiter);
+        let _ = serialized_attributes.append(&storage_addr_buff);
+        let _ = serialized_attributes.append(&delimiter);
+        let _ = serialized_attributes.append(&timestamp_buff);
+        let _ = serialized_attributes.append(&delimiter);
+        let _ = serialized_attributes.append(&hash_buff);
+
+        serialized_attributes
     }
 
     // Data ------------------------------------------------------------------
@@ -61,7 +109,7 @@ pub trait Trafficflchain {
     // Storage mappers -------------------------------------------------------
     #[view(getGraphNetwork)]
     #[storage_mapper("graph_networks")]
-    fn graph_networks(&self, city_id: u64) -> UnorderedSetMapper<GraphTolopogy<Self::Api, Self::Api>>;
+    fn graph_networks(&self, city_id: u64) -> SingleValueMapper<GraphTolopogy<Self::Api, Self::Api>>;
 
     // #[view(getUserAddress)]
     // #[storage_get("user_address")]
@@ -73,6 +121,9 @@ pub trait Trafficflchain {
     // Events ----------------------------------------------------------------
     #[event("network_setup_event")]
     fn network_setup_event(&self, city_id: u64);
+
+    #[event("network_cleared_event")]
+    fn network_cleared_event(&self, city_id: u64);
 
     #[event("data_batch_published_event")]
     fn data_batch_published_event(&self);

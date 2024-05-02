@@ -59,6 +59,16 @@ setup_network() {
         --send
 }
 
+clear_network() {
+    mxpy contract call ${SC_ADDR} --recall-nonce \
+        --pem=${MASTER_WALLET} \
+        --gas-limit=${GAS_LIMIT} \
+        --proxy=${PROXY} --chain=${CHAIN_ID} \
+        --function="clear_network" \
+        --arguments $1 \
+        --send
+}
+
 view_graph_network() {
     mxpy contract query ${SC_ADDR} \
         --proxy=${PROXY}\
@@ -66,10 +76,10 @@ view_graph_network() {
         --arguments $1
 }
 
-get_network_storage_addr() {
+get_serialized_network_data() {
     mxpy contract query ${SC_ADDR} \
         --proxy=${PROXY}\
-        --function "get_network_storage_addr" \
+        --function "get_serialized_network_data" \
         --arguments $1
 
 }
