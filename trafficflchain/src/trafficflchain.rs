@@ -52,11 +52,11 @@ pub trait Trafficflchain {
     fn clear_network(&self, city_id: u64) {
         require!(
             !self.graph_networks(city_id).is_empty(),
-            "Network does not exist."
+            "Network does not exist!"
         );
         require!(
             self.blockchain().get_caller() == self.graph_networks(city_id).get().owner,
-            "Only the owner can clear the network."
+            "Only the owner can clear the network!"
         );
 
         self.graph_networks(city_id).clear();
@@ -64,15 +64,34 @@ pub trait Trafficflchain {
     }
 
     #[view]
+    fn get_local_updates(&self) -> ManagedVec<u16> {
+
+        // let session_id = self.active_session_manager().get().session_id;
+        // let version = self.version(session_id).get();
+        // let mut result: ManagedVec<ManagedBuffer> = ManagedVec::new();
+        // for update in self.local_updates(session_id, version).iter() {
+        //     result.push(update.file_location);
+        // }
+        let mut a = ManagedVec::new();
+        a.push(1);
+        a.push(2);
+        a.push(3);
+        a
+    }
+
+    #[view]
     fn get_serialized_network_data(&self, city_id: u64) -> ManagedBuffer<Self::Api> {
+        require!(
+            !self.graph_networks(city_id).is_empty(),
+            "Network does not exist!"
+        );
+
         let graph = self.graph_networks(city_id).get();
 
         let mut vertices_buff = ManagedBuffer::new();
         let _ = graph.vertices_count.top_encode(&mut vertices_buff);
         let mut edges_buff = ManagedBuffer::new();
         let _ = graph.edges_count.top_encode(&mut edges_buff);
-        let mut owner_buff = ManagedBuffer::new();
-        let _ = graph.owner.top_encode(&mut owner_buff);
         let mut storage_addr_buff = ManagedBuffer::new();
         let _ = graph.storage_addr.top_encode(&mut storage_addr_buff);
         let mut timestamp_buff = ManagedBuffer::new();
@@ -86,7 +105,6 @@ pub trait Trafficflchain {
         let _ = serialized_attributes.append(&delimiter);
         let _ = serialized_attributes.append(&edges_buff);
         let _ = serialized_attributes.append(&delimiter);
-        let _ = serialized_attributes.append(&owner_buff);
         let _ = serialized_attributes.append(&delimiter);
         let _ = serialized_attributes.append(&storage_addr_buff);
         let _ = serialized_attributes.append(&delimiter);

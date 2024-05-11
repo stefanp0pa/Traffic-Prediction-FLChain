@@ -76,6 +76,12 @@ view_graph_network() {
         --arguments $1
 }
 
+view_local_updates() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_local_updates
+}
+
 get_serialized_network_data() {
     mxpy contract query ${SC_ADDR} \
         --proxy=${PROXY}\
