@@ -1,0 +1,175 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.76.0-nightly",
+            "commitHash": "d86d65bbc19b928387f68427fcc3a0da498d8a19",
+            "commitDate": "2023-12-10",
+            "channel": "Nightly",
+            "short": "rustc 1.76.0-nightly (d86d65bbc 2023-12-10)"
+        },
+        "contractCrate": {
+            "name": "trafficflchain",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.45.2"
+        }
+    },
+    "name": "Trafficflchain",
+    "constructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "upgrade",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "setup_network",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "city_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "vertices_count",
+                    "type": "u64"
+                },
+                {
+                    "name": "edges_count",
+                    "type": "u64"
+                },
+                {
+                    "name": "storage_addr",
+                    "type": "bytes"
+                },
+                {
+                    "name": "hash",
+                    "type": "array32<u8>"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "clear_network",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "city_id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "get_local_updates",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "List<u32>"
+                }
+            ]
+        },
+        {
+            "name": "get_serialized_network_data",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "city_id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "publish_data_batch",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getGraphNetwork",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "city_id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GraphTolopogy"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "identifier": "network_setup_event",
+            "inputs": [
+                {
+                    "name": "city_id",
+                    "type": "u64",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "identifier": "network_cleared_event",
+            "inputs": [
+                {
+                    "name": "city_id",
+                    "type": "u64",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "identifier": "data_batch_published_event",
+            "inputs": []
+        }
+    ],
+    "esdtAttributes": [],
+    "hasCallback": false,
+    "types": {
+        "GraphTolopogy": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "vertices_count",
+                    "type": "u64"
+                },
+                {
+                    "name": "edges_count",
+                    "type": "u64"
+                },
+                {
+                    "name": "owner",
+                    "type": "Address"
+                },
+                {
+                    "name": "storage_addr",
+                    "type": "bytes"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64"
+                },
+                {
+                    "name": "hash",
+                    "type": "array32<u8>"
+                }
+            ]
+        }
+    }
+}

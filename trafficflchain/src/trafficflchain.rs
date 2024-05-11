@@ -64,7 +64,7 @@ pub trait Trafficflchain {
     }
 
     #[view]
-    fn get_local_updates(&self) -> ManagedVec<u16> {
+    fn get_local_updates(&self) -> ManagedVec<u32> {
 
         // let session_id = self.active_session_manager().get().session_id;
         // let version = self.version(session_id).get();
@@ -138,10 +138,14 @@ pub trait Trafficflchain {
 
     // Events ----------------------------------------------------------------
     #[event("network_setup_event")]
-    fn network_setup_event(&self, city_id: u64);
+    fn network_setup_event(
+        &self,
+        #[indexed] city_id: u64);
 
     #[event("network_cleared_event")]
-    fn network_cleared_event(&self, city_id: u64);
+    fn network_cleared_event(
+        &self,
+        #[indexed] city_id: u64);
 
     #[event("data_batch_published_event")]
     fn data_batch_published_event(&self);
