@@ -69,6 +69,50 @@ clear_network() {
         --send
 }
 
+sign_up() {
+    mxpy contract call ${SC_ADDR} --recall-nonce \
+        --pem=${MASTER_WALLET} \
+        --gas-limit=${GAS_LIMIT} \
+        --proxy=${PROXY} --chain=${CHAIN_ID} \
+        --function="sign_up" \
+        --send
+}
+
+clear_user() {
+    mxpy contract call ${SC_ADDR} --recall-nonce \
+        --pem=${MASTER_WALLET} \
+        --gas-limit=${GAS_LIMIT} \
+        --proxy=${PROXY} --chain=${CHAIN_ID} \
+        --function="clear_user" \
+        --send
+}
+
+view_user() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function getUser \
+        --arguments $1
+}
+
+users_count() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_users_count
+}
+
+files_count() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_files_count
+}   
+
+get_serialized_user_data() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function "get_serialized_users_data" \
+        --arguments $1
+}
+
 view_graph_network() {
     mxpy contract query ${SC_ADDR} \
         --proxy=${PROXY}\

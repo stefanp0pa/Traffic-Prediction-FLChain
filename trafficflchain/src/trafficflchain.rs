@@ -2,6 +2,13 @@
 
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
+use multiversx_sc::codec::TopEncodeMulti;
+
+mod role;
+mod filetype;
+
+use role::Role;
+use filetype::FileType;
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
 pub struct GraphTolopogy<M: ManagedTypeApi, N: ManagedTypeApi> {
@@ -11,6 +18,23 @@ pub struct GraphTolopogy<M: ManagedTypeApi, N: ManagedTypeApi> {
     pub storage_addr: ManagedBuffer<N>,
     pub timestamp: u64,
     pub hash: [u8; 32],
+}
+
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
+pub struct User {
+    role: Role,
+    reputation: u32,
+    stake: u32,
+}
+
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
+pub struct File<M: ManagedTypeApi> {
+    file_location: ManagedBuffer<M>,
+    file_hash: [u8; 32],
+    approval_evaluators: ManagedVec<M, ManagedAddress<M>>,
+    disapproval_evaluators: ManagedVec<M, ManagedAddress<M>>,
+    file_type: FileType,
+    epoch: u64
 }
 
 #[multiversx_sc::contract]
@@ -79,42 +103,6 @@ pub trait Trafficflchain {
         a
     }
 
-    #[view]
-    fn get_serialized_network_data(&self, city_id: u64) -> ManagedBuffer<Self::Api> {
-        require!(
-            !self.graph_networks(city_id).is_empty(),
-            "Network does not exist!"
-        );
-
-        let graph = self.graph_networks(city_id).get();
-
-        let mut vertices_buff = ManagedBuffer::new();
-        let _ = graph.vertices_count.top_encode(&mut vertices_buff);
-        let mut edges_buff = ManagedBuffer::new();
-        let _ = graph.edges_count.top_encode(&mut edges_buff);
-        let mut storage_addr_buff = ManagedBuffer::new();
-        let _ = graph.storage_addr.top_encode(&mut storage_addr_buff);
-        let mut timestamp_buff = ManagedBuffer::new();
-        let _ = graph.timestamp.top_encode(&mut timestamp_buff);
-        let mut hash_buff = ManagedBuffer::new();
-        let _ = graph.hash.top_encode(&mut hash_buff);
-        let delimiter = ManagedBuffer::from(b"\0\0\0\0");
-        let mut serialized_attributes = ManagedBuffer::new();
-
-        let _ = serialized_attributes.append(&vertices_buff);
-        let _ = serialized_attributes.append(&delimiter);
-        let _ = serialized_attributes.append(&edges_buff);
-        let _ = serialized_attributes.append(&delimiter);
-        let _ = serialized_attributes.append(&delimiter);
-        let _ = serialized_attributes.append(&storage_addr_buff);
-        let _ = serialized_attributes.append(&delimiter);
-        let _ = serialized_attributes.append(&timestamp_buff);
-        let _ = serialized_attributes.append(&delimiter);
-        let _ = serialized_attributes.append(&hash_buff);
-
-        serialized_attributes
-    }
-
     // Data ------------------------------------------------------------------
     #[endpoint]
     fn publish_data_batch(&self) {
@@ -124,17 +112,95 @@ pub trait Trafficflchain {
 
     // Global ----------------------------------------------------------------
 
+    // Users -----------------------------------------------------------------
+    #[endpoint]
+    fn sign_up(&self) {
+        let caller: ManagedAddress = self.blockchain().get_caller();
+        let already_signed_up = self.users(caller.clone()).is_empty();
+        if !already_signed_up {
+            sc_panic!("Already signed up!");
+        }
+        else {
+            self.users(caller.clone()).insert(User {
+                role: Role::Sampler,
+                reputation: 123u32,
+                stake: 99u32,
+            });
+            self.signup_user_event(caller, Role::Undefined);
+            self.users_count().set(self.users_count().get() + 1);
+        }
+    }
+
+    #[endpoint]
+    fn clear_user(&self) {
+        let caller: ManagedAddress = self.blockchain().get_caller();
+        let invalid_user = self.users(caller.clone()).is_empty();
+        if invalid_user {
+            sc_panic!("User does not exist!");
+        }
+        else {
+            self.users(caller.clone()).clear();
+            self.user_cleared_event(caller.clone());
+            self.users_count().set(self.users_count().get() - 1);
+        }
+    }
+
+    // #[view]
+    // fn get_users_by_role(&self, role: Role) -> ManagedVec<ManagedAddress> {
+    //     let mut output: ManagedVec<ManagedAddress> = ManagedVec::new();
+    //     for user in self.users()
+    //         .iter().filter {
+    //         if user.role == role {
+    //             output.push(user);
+    //         }
+    //     }
+    //     output
+    // }
+
+    #[view]
+    fn get_serialized_user_data(&self, user_addr: ManagedAddress) -> ManagedVec<ManagedBuffer<Self::Api>> {
+        require!(
+            !self.users(user_addr.clone()).is_empty(),
+            "User does not exist!"
+        );
+
+        let mut output: ManagedVec<ManagedBuffer<Self::Api>> = ManagedVec::new();
+        let _ = self.users(user_addr.clone()).multi_encode(&mut output);
+        output
+    }
+
+    #[view]
+    fn get_serialized_network_data(&self, city_id: u64) -> ManagedBuffer<Self::Api> {
+        require!(
+            !self.graph_networks(city_id).is_empty(),
+            "Network does not exist!"
+        );
+
+        let mut output: ManagedBuffer<Self::Api> = ManagedBuffer::new();
+        let _ = self.graph_networks(city_id).get().top_encode(&mut output);
+        output
+    }
+
     // Storage mappers -------------------------------------------------------
-    #[view(getGraphNetwork)]
+    #[view(get_graph_networks)]
     #[storage_mapper("graph_networks")]
     fn graph_networks(&self, city_id: u64) -> SingleValueMapper<GraphTolopogy<Self::Api, Self::Api>>;
 
-    // #[view(getUserAddress)]
-    // #[storage_get("user_address")]
-    // fn get_user_address(&self, user_id: usize) -> ManagedAddress;
+    #[view(get_users)]
+    #[storage_mapper("users")]
+    fn users(&self, user_addr: ManagedAddress) -> UnorderedSetMapper<User>;
 
-    // #[storage_set("user_address")]
-    // fn set_user_address(&self, user_id: usize, address: &ManagedAddress);
+    #[view(get_files)]
+    #[storage_mapper("files")]
+    fn files(&self, author_addr: ManagedAddress) -> UnorderedSetMapper<File<Self::Api>>;
+
+    #[view(get_users_count)]
+    #[storage_mapper("users_count")]
+    fn users_count(&self) -> SingleValueMapper<u64>;
+
+    #[view(get_files_count)]
+    #[storage_mapper("files_count")]
+    fn files_count(&self) -> SingleValueMapper<u64>;
 
     // Events ----------------------------------------------------------------
     #[event("network_setup_event")]
@@ -146,6 +212,17 @@ pub trait Trafficflchain {
     fn network_cleared_event(
         &self,
         #[indexed] city_id: u64);
+    
+    #[event("signup_user_event")]
+    fn signup_user_event(
+        &self,
+        #[indexed] user_addr: ManagedAddress<Self::Api>,
+        #[indexed] role: Role);
+
+    #[event("user_cleared_event")]
+    fn user_cleared_event(
+        &self,
+        #[indexed] user_addr: ManagedAddress<Self::Api>);
 
     #[event("data_batch_published_event")]
     fn data_batch_published_event(&self);

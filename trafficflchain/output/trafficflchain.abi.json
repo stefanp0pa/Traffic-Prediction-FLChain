@@ -77,6 +77,39 @@
             ]
         },
         {
+            "name": "publish_data_batch",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "sign_up",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "clear_user",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "get_serialized_user_data",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<bytes>"
+                }
+            ]
+        },
+        {
             "name": "get_serialized_network_data",
             "mutability": "readonly",
             "inputs": [
@@ -92,13 +125,7 @@
             ]
         },
         {
-            "name": "publish_data_batch",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getGraphNetwork",
+            "name": "get_graph_networks",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -109,6 +136,58 @@
             "outputs": [
                 {
                     "type": "GraphTolopogy"
+                }
+            ]
+        },
+        {
+            "name": "get_users",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<User>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "get_files",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "author_addr",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<File>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "get_users_count",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "get_files_count",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         }
@@ -135,6 +214,31 @@
             ]
         },
         {
+            "identifier": "signup_user_event",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "role",
+                    "type": "Role",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "identifier": "user_cleared_event",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
             "identifier": "data_batch_published_event",
             "inputs": []
         }
@@ -142,6 +246,60 @@
     "esdtAttributes": [],
     "hasCallback": false,
     "types": {
+        "File": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "file_location",
+                    "type": "bytes"
+                },
+                {
+                    "name": "file_hash",
+                    "type": "array32<u8>"
+                },
+                {
+                    "name": "approval_evaluators",
+                    "type": "List<Address>"
+                },
+                {
+                    "name": "disapproval_evaluators",
+                    "type": "List<Address>"
+                },
+                {
+                    "name": "file_type",
+                    "type": "FileType"
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                }
+            ]
+        },
+        "FileType": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Undefined",
+                    "discriminant": 0
+                },
+                {
+                    "name": "SensitiveDataBatch",
+                    "discriminant": 1
+                },
+                {
+                    "name": "PublicDataBatch",
+                    "discriminant": 2
+                },
+                {
+                    "name": "Model",
+                    "discriminant": 3
+                },
+                {
+                    "name": "AggregationResult",
+                    "discriminant": 4
+                }
+            ]
+        },
         "GraphTolopogy": {
             "type": "struct",
             "fields": [
@@ -168,6 +326,56 @@
                 {
                     "name": "hash",
                     "type": "array32<u8>"
+                }
+            ]
+        },
+        "Role": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Undefined",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Initiator",
+                    "discriminant": 1
+                },
+                {
+                    "name": "Sampler",
+                    "discriminant": 2
+                },
+                {
+                    "name": "Trainer",
+                    "discriminant": 3
+                },
+                {
+                    "name": "Evaluator",
+                    "discriminant": 4
+                },
+                {
+                    "name": "Aggregator",
+                    "discriminant": 5
+                },
+                {
+                    "name": "EventsProcessor",
+                    "discriminant": 6
+                }
+            ]
+        },
+        "User": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "role",
+                    "type": "Role"
+                },
+                {
+                    "name": "reputation",
+                    "type": "u32"
+                },
+                {
+                    "name": "stake",
+                    "type": "u32"
                 }
             ]
         }
