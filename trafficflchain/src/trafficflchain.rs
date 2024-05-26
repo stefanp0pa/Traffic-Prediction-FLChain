@@ -11,11 +11,11 @@ use role::Role;
 use filetype::FileType;
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
-pub struct GraphTolopogy<M: ManagedTypeApi, N: ManagedTypeApi> {
+pub struct GraphTopology<M: ManagedTypeApi> {
     pub vertices_count: u64,
     pub edges_count: u64,
     pub owner: ManagedAddress<M>,
-    pub storage_addr: ManagedBuffer<N>,
+    pub storage_addr: [u8; 46],
     pub timestamp: u64,
     pub hash: [u8; 32],
 }
@@ -52,11 +52,11 @@ pub trait Trafficflchain {
         city_id: u64,
         vertices_count: u64,
         edges_count: u64,
-        storage_addr: ManagedBuffer<Self::Api>,
+        storage_addr: [u8; 46],
         hash: [u8; 32]) {
         let owner = self.blockchain().get_caller();
         let timestamp = self.blockchain().get_block_timestamp();
-        let graph = GraphTolopogy {
+        let graph = GraphTopology {
             vertices_count,
             edges_count,
             owner,
@@ -170,21 +170,22 @@ pub trait Trafficflchain {
     }
 
     #[view]
-    fn get_serialized_network_data(&self, city_id: u64) -> ManagedBuffer<Self::Api> {
+    fn get_serialized_network_data(&self, city_id: u64) -> GraphTopology<Self::Api> {
         require!(
             !self.graph_networks(city_id).is_empty(),
             "Network does not exist!"
         );
 
-        let mut output: ManagedBuffer<Self::Api> = ManagedBuffer::new();
-        let _ = self.graph_networks(city_id).get().top_encode(&mut output);
-        output
+        self.graph_networks(city_id).get()
+        // let mut output: ManagedBuffer<Self::Api> = ManagedBuffer::new();
+        // let _ = self.graph_networks(city_id).get().top_encode(&mut output);
+        // output
     }
 
     // Storage mappers -------------------------------------------------------
     #[view(get_graph_networks)]
     #[storage_mapper("graph_networks")]
-    fn graph_networks(&self, city_id: u64) -> SingleValueMapper<GraphTolopogy<Self::Api, Self::Api>>;
+    fn graph_networks(&self, city_id: u64) -> SingleValueMapper<GraphTopology<Self::Api>>;
 
     #[view(get_users)]
     #[storage_mapper("users")]

@@ -113,6 +113,18 @@ get_serialized_user_data() {
         --arguments $1
 }
 
+get_local_updates() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_local_updates
+}
+
+get_users() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_users
+}
+
 view_graph_network() {
     mxpy contract query ${SC_ADDR} \
         --proxy=${PROXY}\

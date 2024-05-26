@@ -1,6 +1,4 @@
-import sys
 import json
-from converts import base64_string_to_hex_string, base64_string_to_string, hex_string_to_numeric, hex_string_to_bech32_address
 
 ABI_SOURCE  = '/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
 CLIENT_DEST = '/Users/stefan/Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py'
