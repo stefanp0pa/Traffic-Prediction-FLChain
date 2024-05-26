@@ -126,7 +126,7 @@ pub trait Trafficflchain {
                 reputation: 123u32,
                 stake: 99u32,
             });
-            self.signup_user_event(caller, Role::Undefined);
+            self.signup_user_event(caller, Role::Sampler);
             self.users_count().set(self.users_count().get() + 1);
         }
     }
