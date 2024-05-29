@@ -8,6 +8,7 @@ GAS_LIMIT = 60000000
 ABI_SOURCE  = "/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
 CLIENT_DEST = f"/Users/stefan/Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py"
 CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
+WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem"
 
 ENDPOINTS_SECTION = "endpoints"
 TYPES_SECTION = "types"
@@ -41,6 +42,7 @@ def insert_constants(file_handler):
     file_handler.write(f"NETWORK_PROVIDER = \"{NETWORK_PROVIDER}\"\n")
     file_handler.write(f"CHAIN_NAME = \"{CHAIN_NAME}\"\n")
     file_handler.write(f"CALLER_USER_ADDR = \"{CALLER_USER_ADDR}\"\n")
+    file_handler.write(f"WALLET_PATH = \"{WALLET_PATH}\"\n")
     file_handler.write(f"GAS_LIMIT = {GAS_LIMIT}\n\n")
     
     file_handler.write("transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)\n")
@@ -93,7 +95,7 @@ available_immutable_endpoints = []
 ignored_endpoints = ['upgrade']
 
 def generate_for_immutable_endpoint(file_handle, endpoint_data):
-    method_name = f"call_{endpoint_data['name']}"
+    method_name = f"query_{endpoint_data['name']}"
     inputs_seq = ', '.join([f"{input['name']}" for input in endpoint_data['inputs']])
     if len(endpoint_data['inputs']) > 0:
         inputs_seq += ', '
@@ -112,6 +114,7 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     file_handle.write("\t\tcaller = Address.from_bech32(caller_user_addr)\n")
     file_handle.write("\t)\n")
     file_handle.write("\tquery = builder.build()\n")
+    file_handle.write(f"\tprint(f'>>>Performing immutable query to {endpoint_data['name']}...')\n")
     file_handle.write("\tresponse = network_provider.query_contract(query).to_dictionary()\n")
     file_handle.write("\tprint(response)\n")
     file_handle.write("\treturn_code = response['returnCode']\n")
@@ -125,11 +128,45 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     output_type = endpoint_data['outputs'][0]['type']
     print(f"Output type: {output_type} for endpoint {endpoint_data['name']}")
     file_handle.write(f"\toutput_type = \'{output_type}\'\n")
-    file_handle.write("\tif not output_type.startswith('List<'):\n")
+    file_handle.write("\tif not output_type.startswith('List<') or not output_type.startswith('variadic<'):\n")
     file_handle.write("\t\treturn_data = return_data[0]\n")
     file_handle.write(f"\tdecode_method = {choose_decode_method(output_type)}\n")
     file_handle.write("\tdecoded_response = decode_method(return_data)\n")
     file_handle.write("\tprint(decoded_response)\n\n")
+
+
+def generate_for_mutable_endpoint(file_handle, endpoint_data):
+    method_name = f"mutate_{endpoint_data['name']}"
+    inputs_seq = ', '.join([f"{input['name']}" for input in endpoint_data['inputs']])
+    if len(endpoint_data['inputs']) > 0:
+        inputs_seq += ', '
+    inputs_seq += 'wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR'
+    file_handle.write(f"def {method_name}({inputs_seq}):\n")
+    if len(endpoint_data['inputs']) > 0:
+        file_handle.write("\t\"\"\"Parameters description\n")
+        for input in endpoint_data['inputs']:
+            file_handle.write(f"\t\t{input['name']} - {input['type']}\n")
+        file_handle.write("\t\"\"\"\n")
+    
+    file_handle.write("\tsigner = UserSigner.from_pem_file(Path(wallet_path))\n")
+    file_handle.write("\tuser_addr = Address.from_bech32(caller_user_addr)\n")
+    file_handle.write("\tnonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)\n")
+    file_handle.write("\tcall_transaction = sc_factory.create_transaction_for_execute(\n")
+    file_handle.write(f"\t\tsender=user_addr,\n")
+    file_handle.write(f"\t\tcontract=contract_address,\n")
+    file_handle.write(f"\t\tfunction=\"{endpoint_data['name']}\",\n")
+    file_handle.write(f"\t\tgas_limit={GAS_LIMIT},\n")
+    file_handle.write("\t\targuments=[")
+    file_handle.write(', '.join([f"{input['name']}" for input in endpoint_data['inputs']]))
+    file_handle.write("]\n")
+    file_handle.write("\t)\n")
+    file_handle.write("\tcall_transaction.nonce = nonce_holder.get_nonce_then_increment()\n")
+    file_handle.write("\tcall_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))\n")
+    file_handle.write(f"\tprint(f'>>>Performing mutable call to {endpoint_data['name']}...')\n")
+    file_handle.write("\tresponse = network_provider.send_transaction(call_transaction)\n")
+    file_handle.write("\tprint(f'>>>Transaction hash: {response}')\n")
+    file_handle.write("\tpass\n\n")
+    
 
 with open(CLIENT_DEST, 'w') as file:
     print(f'[*] Started generating the client file at location {CLIENT_DEST}...')
@@ -149,3 +186,6 @@ with open(CLIENT_DEST, 'w') as file:
     
     for endpoint in immutable_endpoints:
         generate_for_immutable_endpoint(file, endpoint)
+        
+    for endpoint in mutable_endpoints:
+        generate_for_mutable_endpoint(file, endpoint)

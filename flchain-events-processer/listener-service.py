@@ -47,19 +47,19 @@ try:
     def signup_user_published_callback(ch, method, properties, body):
         try:
             payload = json.loads(body.decode())
-            print(f" [*] Received data batch published event with payload: {payload}!")
+            print(f" [*] Received signup_user event with payload: {payload}!")
             # ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
-            print(" [x] Could not retrieve data batch published event with exception %s!" % e)
+            print(" [x] Could not retrieve signup_user event with exception %s!" % e)
             # ch.basic_ack(delivery_tag=method.delivery_tag)
     
     def user_cleared_published_callback(ch, method, properties, body):
         try:
             payload = json.loads(body.decode())
-            print(f" [*] Received data batch published event with payload: {payload}!")
+            print(f" [*] Received user_cleared event with payload: {payload}!")
             # ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
-            print(" [x] Could not retrieve data batch published event with exception %s!" % e)
+            print(" [x] Could not retrieve user_cleared event with exception %s!" % e)
             # ch.basic_ack(delivery_tag=method.delivery_tag)
         
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))

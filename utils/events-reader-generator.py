@@ -4,6 +4,7 @@ ABI_SOURCE  = '/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/tr
 CLIENT_DEST = '/Users/stefan/Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py'
 
 EVENTS_SECTION = 'events'
+IGNORED_EVENTS = ['SCUpgrade', 'writeLog', 'completedTxEvent', 'signalError', 'internalVMErrors']
 
 def read_abi_file(file_path = ABI_SOURCE):
     try:
@@ -72,7 +73,7 @@ with open(CLIENT_DEST, 'w') as file:
         file.write("\n\n")
     all_event_names = ',\n'.join([f"'{name}'" for name in total_event_names])
     file.write(f"event_names = [{all_event_names}]\n\n")
-    file.write("ignore_events = ['SCUpgrade', 'writeLog', 'completedTxEvent']\n\n")
+    file.write(f"ignore_events = {IGNORED_EVENTS}\n\n")
     
     file.write("def show_all_event_types():\n")
     file.write("\treturn event_names\n\n")
