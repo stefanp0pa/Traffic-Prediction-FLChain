@@ -51,7 +51,9 @@ def get_transaction_events(txHash):
 def get_latest_sc_transactions(scAddr, fromIndex, size):
     url = f'{API_GATEWAY}/{ACCOUNTS_PATH}/{scAddr}/{TRANSFERS_PATH}?withUsername=true&from={fromIndex}&size={size}'
     response = requests.get(url)
-    return sorted(response.json(), key=lambda x: x['nonce'], reverse=True)
+    content = response.json()
+    content = [item for item in content if 'nonce' in item]
+    return sorted(content, key=lambda x: x['nonce'], reverse=True)
 
 def publish_event(event, payload):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))

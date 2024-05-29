@@ -10,7 +10,7 @@ mod filetype;
 use role::Role;
 use filetype::FileType;
 
-#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct GraphTopology<M: ManagedTypeApi> {
     pub vertices_count: u64,
     pub edges_count: u64,
@@ -20,14 +20,12 @@ pub struct GraphTopology<M: ManagedTypeApi> {
     pub hash: [u8; 32],
 }
 
-#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, Copy)]
 pub struct User {
-    role: Role,
-    reputation: u32,
-    stake: u32,
+    role: Role
 }
 
-#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi)]
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct File<M: ManagedTypeApi> {
     file_location: ManagedBuffer<M>,
     file_hash: [u8; 32],
@@ -48,12 +46,7 @@ pub trait Trafficflchain {
     // Graph -----------------------------------------------------------------
     #[endpoint]
     fn setup_network(
-        &self,
-        city_id: u64,
-        vertices_count: u64,
-        edges_count: u64,
-        storage_addr: [u8; 46],
-        hash: [u8; 32]) {
+        &self, city_id: u64, vertices_count: u64, edges_count: u64, storage_addr: [u8; 46], hash: [u8; 32]) {
         let owner = self.blockchain().get_caller();
         let timestamp = self.blockchain().get_block_timestamp();
         let graph = GraphTopology {
@@ -87,21 +80,21 @@ pub trait Trafficflchain {
         self.network_cleared_event(city_id);
     }
 
-    #[view]
-    fn get_local_updates(&self) -> ManagedVec<u32> {
+    // #[view]
+    // fn get_local_updates(&self) -> ManagedVec<u32> {
 
-        // let session_id = self.active_session_manager().get().session_id;
-        // let version = self.version(session_id).get();
-        // let mut result: ManagedVec<ManagedBuffer> = ManagedVec::new();
-        // for update in self.local_updates(session_id, version).iter() {
-        //     result.push(update.file_location);
-        // }
-        let mut a = ManagedVec::new();
-        a.push(1);
-        a.push(2);
-        a.push(3);
-        a
-    }
+    //     // let session_id = self.active_session_manager().get().session_id;
+    //     // let version = self.version(session_id).get();
+    //     // let mut result: ManagedVec<ManagedBuffer> = ManagedVec::new();
+    //     // for update in self.local_updates(session_id, version).iter() {
+    //     //     result.push(update.file_location);
+    //     // }
+    //     let mut a = ManagedVec::new();
+    //     a.push(1);
+    //     a.push(2);
+    //     a.push(3);
+    //     a
+    // }
 
     // Data ------------------------------------------------------------------
     #[endpoint]
@@ -114,20 +107,24 @@ pub trait Trafficflchain {
 
     // Users -----------------------------------------------------------------
     #[endpoint]
-    fn sign_up(&self) {
-        let caller: ManagedAddress = self.blockchain().get_caller();
+    #[payable("*")]
+    fn signup_user(&self) {
+        let caller = self.blockchain().get_caller();
         let already_signed_up = self.users(caller.clone()).is_empty();
         if !already_signed_up {
             sc_panic!("Already signed up!");
         }
         else {
-            self.users(caller.clone()).insert(User {
-                role: Role::Sampler,
-                reputation: 123u32,
-                stake: 99u32,
-            });
-            self.signup_user_event(caller, Role::Sampler);
+            let staked_amount = self.call_value().egld_value().clone_value();
+            let user = User {
+                role: Role::Undefined
+            };
+
+            self.users(caller.clone()).set(user);
+            self.stakes(caller.clone()).set(staked_amount.clone());
+            self.reputations(caller.clone()).set(0u32);
             self.users_count().set(self.users_count().get() + 1);
+            self.signup_user_event(caller, staked_amount.clone(), user.role); // Pass a reference to staked_amount
         }
     }
 
@@ -139,9 +136,12 @@ pub trait Trafficflchain {
             sc_panic!("User does not exist!");
         }
         else {
-            self.users(caller.clone()).clear();
-            self.user_cleared_event(caller.clone());
+            self.send().direct_egld(&caller, &self.stakes(caller.clone()).get());
+            self.stakes(caller.clone()).clear();
+            self.users(caller.clone()).clear(); 
+            self.reputations(caller.clone()).clear();
             self.users_count().set(self.users_count().get() - 1);
+            self.user_cleared_event(caller.clone());
         }
     }
 
@@ -157,39 +157,47 @@ pub trait Trafficflchain {
     //     output
     // }
 
-    #[view]
-    fn get_serialized_user_data(&self, user_addr: ManagedAddress) -> ManagedVec<ManagedBuffer<Self::Api>> {
-        require!(
-            !self.users(user_addr.clone()).is_empty(),
-            "User does not exist!"
-        );
+    // #[view]
+    // fn get_serialized_user_data(&self, user_addr: ManagedAddress) -> ManagedVec<ManagedBuffer<Self::Api>> {
+    //     require!(
+    //         !self.users(user_addr.clone()).is_empty(),
+    //         "User does not exist!"
+    //     );
 
-        let mut output: ManagedVec<ManagedBuffer<Self::Api>> = ManagedVec::new();
-        let _ = self.users(user_addr.clone()).multi_encode(&mut output);
-        output
-    }
+    //     let mut output: ManagedVec<ManagedBuffer<Self::Api>> = ManagedVec::new();
+    //     let _ = self.users(user_addr.clone()).multi_encode(&mut output);
+    //     output
+    // }
 
-    #[view]
-    fn get_serialized_network_data(&self, city_id: u64) -> GraphTopology<Self::Api> {
-        require!(
-            !self.graph_networks(city_id).is_empty(),
-            "Network does not exist!"
-        );
+    // #[view]
+    // fn get_serialized_network_data(&self, city_id: u64) -> GraphTopology<Self::Api> {
+    //     require!(
+    //         !self.graph_networks(city_id).is_empty(),
+    //         "Network does not exist!"
+    //     );
 
-        self.graph_networks(city_id).get()
-        // let mut output: ManagedBuffer<Self::Api> = ManagedBuffer::new();
-        // let _ = self.graph_networks(city_id).get().top_encode(&mut output);
-        // output
-    }
+    //     self.graph_networks(city_id).get()
+    //     // let mut output: ManagedBuffer<Self::Api> = ManagedBuffer::new();
+    //     // let _ = self.graph_networks(city_id).get().top_encode(&mut output);
+    //     // output
+    // }
 
     // Storage mappers -------------------------------------------------------
-    #[view(get_graph_networks)]
+    #[view(get_graph_network)]
     #[storage_mapper("graph_networks")]
     fn graph_networks(&self, city_id: u64) -> SingleValueMapper<GraphTopology<Self::Api>>;
 
-    #[view(get_users)]
+    #[view(get_user)]
     #[storage_mapper("users")]
-    fn users(&self, user_addr: ManagedAddress) -> UnorderedSetMapper<User>;
+    fn users(&self, user_addr: ManagedAddress) -> SingleValueMapper<User>;
+
+    #[view(get_stake)]
+    #[storage_mapper("stakes")]
+    fn stakes(&self, user_addr: ManagedAddress) -> SingleValueMapper<BigUint>;
+
+    #[view(get_reputation)]
+    #[storage_mapper("reputations")]
+    fn reputations(&self, user_addr: ManagedAddress) -> SingleValueMapper<u32>;
 
     #[view(get_files)]
     #[storage_mapper("files")]
@@ -202,6 +210,7 @@ pub trait Trafficflchain {
     #[view(get_files_count)]
     #[storage_mapper("files_count")]
     fn files_count(&self) -> SingleValueMapper<u64>;
+
 
     // Events ----------------------------------------------------------------
     #[event("network_setup_event")]
@@ -217,13 +226,14 @@ pub trait Trafficflchain {
     #[event("signup_user_event")]
     fn signup_user_event(
         &self,
-        #[indexed] user_addr: ManagedAddress<Self::Api>,
+        #[indexed] user_addr: ManagedAddress,
+        #[indexed] stake: BigUint,
         #[indexed] role: Role);
 
     #[event("user_cleared_event")]
     fn user_cleared_event(
         &self,
-        #[indexed] user_addr: ManagedAddress<Self::Api>);
+        #[indexed] user_addr: ManagedAddress);
 
     #[event("data_batch_published_event")]
     fn data_batch_published_event(&self);

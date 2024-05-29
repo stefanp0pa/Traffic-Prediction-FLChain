@@ -94,11 +94,11 @@ try:
         routing_key="data_batch_published_event")
     channel.queue_bind(
         exchange="flchain-events-exchange", 
-        queue=queue_names[2],
+        queue=queue_names[3],
         routing_key="signup_user_event")
     channel.queue_bind(
         exchange="flchain-events-exchange", 
-        queue=queue_names[2],
+        queue=queue_names[4],
         routing_key="user_cleared_event")
     
     channel.basic_consume(
@@ -117,12 +117,12 @@ try:
         auto_ack=True,
     )
     channel.basic_consume(
-        queue=queue_names[2],
+        queue=queue_names[3],
         on_message_callback=signup_user_published_callback,
         auto_ack=True,
     )
     channel.basic_consume(
-        queue=queue_names[2],
+        queue=queue_names[4],
         on_message_callback=user_cleared_published_callback,
         auto_ack=True,
     )

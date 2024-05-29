@@ -67,24 +67,17 @@
             "outputs": []
         },
         {
-            "name": "get_local_updates",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "List<u32>"
-                }
-            ]
-        },
-        {
             "name": "publish_data_batch",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
-            "name": "sign_up",
+            "name": "signup_user",
             "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
             "inputs": [],
             "outputs": []
         },
@@ -95,22 +88,7 @@
             "outputs": []
         },
         {
-            "name": "get_serialized_user_data",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "user_addr",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "List<bytes>"
-                }
-            ]
-        },
-        {
-            "name": "get_serialized_network_data",
+            "name": "get_graph_network",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -125,22 +103,7 @@
             ]
         },
         {
-            "name": "get_graph_networks",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "city_id",
-                    "type": "u64"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "GraphTopology"
-                }
-            ]
-        },
-        {
-            "name": "get_users",
+            "name": "get_user",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -150,8 +113,37 @@
             ],
             "outputs": [
                 {
-                    "type": "variadic<User>",
-                    "multi_result": true
+                    "type": "User"
+                }
+            ]
+        },
+        {
+            "name": "get_stake",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "get_reputation",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u32"
                 }
             ]
         },
@@ -219,6 +211,11 @@
                 {
                     "name": "user_addr",
                     "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "stake",
+                    "type": "BigUint",
                     "indexed": true
                 },
                 {
@@ -368,14 +365,6 @@
                 {
                     "name": "role",
                     "type": "Role"
-                },
-                {
-                    "name": "reputation",
-                    "type": "u32"
-                },
-                {
-                    "name": "stake",
-                    "type": "u32"
                 }
             ]
         }

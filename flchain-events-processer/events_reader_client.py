@@ -89,8 +89,9 @@ def read_network_cleared_event(payload):
 def read_signup_user_event(payload):
 	event_name = base64_string_to_string(payload[0])
 	user_addr = base64_string_to_bech32_address(payload[1])
-	role = base64_string_to_numeric(payload[2])
-	return json.dumps({'user_addr': user_addr, 'role': role, 'identifier': event_name})
+	stake = base64_string_to_numeric(payload[2])
+	role = base64_string_to_numeric(payload[3])
+	return json.dumps({'user_addr': user_addr, 'stake': stake, 'role': role, 'identifier': event_name})
 
 
 def read_user_cleared_event(payload):
@@ -104,11 +105,19 @@ def read_data_batch_published_event(payload):
 	return json.dumps({'identifier': event_name})
 
 
+def read_transferValueOnly(payload):
+	event_name = base64_string_to_string(payload[0])
+	value = base64_string_to_numeric(payload[1])
+	dest = base64_string_to_bech32_address(payload[2])
+	return json.dumps({'value': value, 'dest': dest, 'identifier': event_name})
+
+
 event_names = ['network_setup_event',
 'network_cleared_event',
 'signup_user_event',
 'user_cleared_event',
-'data_batch_published_event']
+'data_batch_published_event',
+'transferValueOnly']
 
 ignore_events = ['SCUpgrade', 'writeLog', 'completedTxEvent', 'signalError', 'internalVMErrors']
 
@@ -125,6 +134,7 @@ def use_read_method(event_name):
 		'signup_user_event': read_signup_user_event,
 		'user_cleared_event': read_user_cleared_event,
 		'data_batch_published_event': read_data_batch_published_event,
+		'transferValueOnly': read_transferValueOnly,
 	}
 
 	if event_name in event_read_methods:

@@ -55,7 +55,7 @@ def insert_constants(file_handler):
     # self.nonce_holder = AccountNonceHolder(self.network_provider.get_account(self.user_addr).nonce)
 
 
-def read_utils(file_path = "converts.py"):
+def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
     try:
         with open(file_path, 'r') as file:
             data = file.read()
@@ -84,6 +84,8 @@ def choose_decode_method(param_type):
     else:
         return 'base64_string_to_numeric'
 
+print(f"[*] Started generating the client file at location {CLIENT_DEST}...")
+
 abi_file_content = read_abi_file()
 utils_methods = read_utils()
 types_sectipn = abi_file_content[TYPES_SECTION]
@@ -93,6 +95,15 @@ available_types = []
 available_mutable_endpoints = []
 available_immutable_endpoints = []
 ignored_endpoints = ['upgrade']
+
+def process_query_input(input):
+    input_type = input['type']
+    print(input_type)
+    if input_type == 'Address':
+        return f"Address.new_from_bech32({input['name']})"
+    else:
+        print("caca")
+        return input['name']
 
 def generate_for_immutable_endpoint(file_handle, endpoint_data):
     method_name = f"query_{endpoint_data['name']}"
@@ -107,7 +118,9 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     file_handle.write(f"\t\tfunction = \"{endpoint_data['name']}\",\n")
     file_handle.write("\t\tcall_arguments = [")
     
-    call_input_seq = ', '.join([f"{input['name']}" for input in endpoint_data['inputs']])
+    query_inputs = endpoint_data['inputs']
+    query_inputs = map(process_query_input, query_inputs)
+    call_input_seq = ', '.join([f"{input}" for input in query_inputs])
     file_handle.write(f"{call_input_seq}")
     
     file_handle.write("],\n")
@@ -140,6 +153,8 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
     inputs_seq = ', '.join([f"{input['name']}" for input in endpoint_data['inputs']])
     if len(endpoint_data['inputs']) > 0:
         inputs_seq += ', '
+    if "payableInTokens" in endpoint_data and endpoint_data['payableInTokens'][0] == '*':
+        inputs_seq += 'native_amount = 1, '
     inputs_seq += 'wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR'
     file_handle.write(f"def {method_name}({inputs_seq}):\n")
     if len(endpoint_data['inputs']) > 0:
@@ -156,6 +171,8 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
     file_handle.write(f"\t\tcontract=contract_address,\n")
     file_handle.write(f"\t\tfunction=\"{endpoint_data['name']}\",\n")
     file_handle.write(f"\t\tgas_limit={GAS_LIMIT},\n")
+    if "payableInTokens" in endpoint_data and endpoint_data['payableInTokens'][0] == '*':
+        file_handle.write("\t\tnative_transfer_amount=native_amount,\n")
     file_handle.write("\t\targuments=[")
     file_handle.write(', '.join([f"{input['name']}" for input in endpoint_data['inputs']]))
     file_handle.write("]\n")
@@ -164,8 +181,7 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
     file_handle.write("\tcall_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))\n")
     file_handle.write(f"\tprint(f'>>>Performing mutable call to {endpoint_data['name']}...')\n")
     file_handle.write("\tresponse = network_provider.send_transaction(call_transaction)\n")
-    file_handle.write("\tprint(f'>>>Transaction hash: {response}')\n")
-    file_handle.write("\tpass\n\n")
+    file_handle.write("\tprint(f'>>>Transaction hash: {response}')\n\n")
     
 
 with open(CLIENT_DEST, 'w') as file:
@@ -189,3 +205,5 @@ with open(CLIENT_DEST, 'w') as file:
         
     for endpoint in mutable_endpoints:
         generate_for_mutable_endpoint(file, endpoint)
+        
+print(f"[*] Finished generating the client file at location {CLIENT_DEST}!")

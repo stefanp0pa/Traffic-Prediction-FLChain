@@ -15,7 +15,9 @@ MASTER_ADDR="erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
 DWARF_ADDR="erd12zjr9k2wae68are9rmz7z6hphyestwgf6m6utuqdndgchc3vyvvs0g3zlg"
 
 build_contract() {
-    mxpy contract build
+    mxpy contract build \
+        && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/sc-proxy-generator.py \
+        && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/events-reader-generator.py
 }
 
 deploy_contract() {
@@ -69,13 +71,27 @@ clear_network() {
         --send
 }
 
-sign_up() {
+signup_user() {
     mxpy contract call ${SC_ADDR} --recall-nonce \
         --pem=${MASTER_WALLET} \
         --gas-limit=${GAS_LIMIT} \
         --proxy=${PROXY} --chain=${CHAIN_ID} \
-        --function="sign_up" \
+        --function="signup_user" \
         --send
+}
+
+get_user() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_user \
+        --arguments $1
+}
+
+get_stake() {
+    mxpy contract query ${SC_ADDR} \
+        --proxy=${PROXY}\
+        --function get_stake \
+        --arguments $1
 }
 
 clear_user() {

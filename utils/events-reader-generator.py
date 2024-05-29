@@ -5,6 +5,18 @@ CLIENT_DEST = '/Users/stefan/Traffic-Prediction-FLChain/flchain-events-processer
 
 EVENTS_SECTION = 'events'
 IGNORED_EVENTS = ['SCUpgrade', 'writeLog', 'completedTxEvent', 'signalError', 'internalVMErrors']
+CHAIN_EVENTS = [{
+    "identifier": "transferValueOnly",
+    "inputs": [
+        {
+            "name": "value",
+            "type": "BigUint"
+        },
+        {
+            "name": "dest",
+            "type": "Address"
+        }]
+}]
 
 def read_abi_file(file_path = ABI_SOURCE):
     try:
@@ -18,7 +30,7 @@ def read_abi_file(file_path = ABI_SOURCE):
         print(f"Error decoding JSON from the file {file_path}.")
         exit(1)
 
-def read_utils(file_path = "converts.py"):
+def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
     try:
         with open(file_path, 'r') as file:
             data = file.read()
@@ -44,6 +56,7 @@ def choose_decode_method(param_type):
 abi_file_content = read_abi_file()
 utils_methods = read_utils()
 events_section = abi_file_content[EVENTS_SECTION]
+events_section += CHAIN_EVENTS
 
 with open(CLIENT_DEST, 'w') as file:
     print(f'[*] Started generating the client file at location {CLIENT_DEST}...')

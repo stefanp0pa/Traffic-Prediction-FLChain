@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           14
+// Endpoints:                           13
 // Async Callback (empty):               1
-// Total number of exported functions:  16
+// Total number of exported functions:  15
 
 #![no_std]
 #![allow(internal_features)]
@@ -23,14 +23,13 @@ multiversx_sc_wasm_adapter::endpoints! {
         upgrade => upgrade
         setup_network => setup_network
         clear_network => clear_network
-        get_local_updates => get_local_updates
         publish_data_batch => publish_data_batch
-        sign_up => sign_up
+        signup_user => signup_user
         clear_user => clear_user
-        get_serialized_user_data => get_serialized_user_data
-        get_serialized_network_data => get_serialized_network_data
-        get_graph_networks => graph_networks
-        get_users => users
+        get_graph_network => graph_networks
+        get_user => users
+        get_stake => stakes
+        get_reputation => reputations
         get_files => files
         get_users_count => users_count
         get_files_count => files_count

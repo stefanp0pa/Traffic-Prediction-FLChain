@@ -98,61 +98,15 @@ sc_factory = SmartContractTransactionsFactory(transaction_factory_config, TokenC
 contract_address = Address.from_bech32(SC_ADDR)
 network_provider = ApiNetworkProvider(NETWORK_PROVIDER)
 
-def query_get_local_updates(caller_user_addr = CALLER_USER_ADDR):
+def query_get_graph_network(city_id, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
-		function = "get_local_updates",
-		call_arguments = [],
-		caller = Address.from_bech32(caller_user_addr)
-	)
-	query = builder.build()
-	print(f'>>>Performing immutable query to get_local_updates...')
-	response = network_provider.query_contract(query).to_dictionary()
-	print(response)
-	return_code = response['returnCode']
-	if return_code != 'ok':
-		print('Error in the response')
-		return None
-	return_data = response['returnData']
-	output_type = 'List<u32>'
-	if not output_type.startswith('List<') or not output_type.startswith('variadic<'):
-		return_data = return_data[0]
-	decode_method = base64_string_to_numeric
-	decoded_response = decode_method(return_data)
-	print(decoded_response)
-
-def query_get_serialized_user_data(user_addr, caller_user_addr = CALLER_USER_ADDR):
-	builder = ContractQueryBuilder(
-		contract = contract_address,
-		function = "get_serialized_user_data",
-		call_arguments = [user_addr],
-		caller = Address.from_bech32(caller_user_addr)
-	)
-	query = builder.build()
-	print(f'>>>Performing immutable query to get_serialized_user_data...')
-	response = network_provider.query_contract(query).to_dictionary()
-	print(response)
-	return_code = response['returnCode']
-	if return_code != 'ok':
-		print('Error in the response')
-		return None
-	return_data = response['returnData']
-	output_type = 'List<bytes>'
-	if not output_type.startswith('List<') or not output_type.startswith('variadic<'):
-		return_data = return_data[0]
-	decode_method = base64_string_to_numeric
-	decoded_response = decode_method(return_data)
-	print(decoded_response)
-
-def query_get_serialized_network_data(city_id, caller_user_addr = CALLER_USER_ADDR):
-	builder = ContractQueryBuilder(
-		contract = contract_address,
-		function = "get_serialized_network_data",
+		function = "get_graph_network",
 		call_arguments = [city_id],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
-	print(f'>>>Performing immutable query to get_serialized_network_data...')
+	print(f'>>>Performing immutable query to get_graph_network...')
 	response = network_provider.query_contract(query).to_dictionary()
 	print(response)
 	return_code = response['returnCode']
@@ -167,15 +121,15 @@ def query_get_serialized_network_data(city_id, caller_user_addr = CALLER_USER_AD
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
-def query_get_graph_networks(city_id, caller_user_addr = CALLER_USER_ADDR):
+def query_get_user(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
-		function = "get_graph_networks",
-		call_arguments = [city_id],
+		function = "get_user",
+		call_arguments = [Address.new_from_bech32(user_addr)],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
-	print(f'>>>Performing immutable query to get_graph_networks...')
+	print(f'>>>Performing immutable query to get_user...')
 	response = network_provider.query_contract(query).to_dictionary()
 	print(response)
 	return_code = response['returnCode']
@@ -183,22 +137,22 @@ def query_get_graph_networks(city_id, caller_user_addr = CALLER_USER_ADDR):
 		print('Error in the response')
 		return None
 	return_data = response['returnData']
-	output_type = 'GraphTopology'
+	output_type = 'User'
 	if not output_type.startswith('List<') or not output_type.startswith('variadic<'):
 		return_data = return_data[0]
-	decode_method = base64_string_to_graphTopology
+	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
-def query_get_users(user_addr, caller_user_addr = CALLER_USER_ADDR):
+def query_get_stake(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
-		function = "get_users",
-		call_arguments = [user_addr],
+		function = "get_stake",
+		call_arguments = [Address.new_from_bech32(user_addr)],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
-	print(f'>>>Performing immutable query to get_users...')
+	print(f'>>>Performing immutable query to get_stake...')
 	response = network_provider.query_contract(query).to_dictionary()
 	print(response)
 	return_code = response['returnCode']
@@ -206,7 +160,30 @@ def query_get_users(user_addr, caller_user_addr = CALLER_USER_ADDR):
 		print('Error in the response')
 		return None
 	return_data = response['returnData']
-	output_type = 'variadic<User>'
+	output_type = 'BigUint'
+	if not output_type.startswith('List<') or not output_type.startswith('variadic<'):
+		return_data = return_data[0]
+	decode_method = base64_string_to_numeric
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+
+def query_get_reputation(user_addr, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_reputation",
+		call_arguments = [Address.new_from_bech32(user_addr)],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_reputation...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'u32'
 	if not output_type.startswith('List<') or not output_type.startswith('variadic<'):
 		return_data = return_data[0]
 	decode_method = base64_string_to_numeric
@@ -217,7 +194,7 @@ def query_get_files(author_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
 		function = "get_files",
-		call_arguments = [author_addr],
+		call_arguments = [Address.new_from_bech32(author_addr)],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
@@ -305,7 +282,6 @@ def mutate_setup_network(city_id, vertices_count, edges_count, storage_addr, has
 	print(f'>>>Performing mutable call to setup_network...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-	pass
 
 def mutate_clear_network(city_id, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
@@ -326,7 +302,6 @@ def mutate_clear_network(city_id, wallet_path = WALLET_PATH, caller_user_addr = 
 	print(f'>>>Performing mutable call to clear_network...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-	pass
 
 def mutate_publish_data_batch(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	signer = UserSigner.from_pem_file(Path(wallet_path))
@@ -344,25 +319,24 @@ def mutate_publish_data_batch(wallet_path = WALLET_PATH, caller_user_addr = CALL
 	print(f'>>>Performing mutable call to publish_data_batch...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-	pass
 
-def mutate_sign_up(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_signup_user(native_amount = 1, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
 	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
 	call_transaction = sc_factory.create_transaction_for_execute(
 		sender=user_addr,
 		contract=contract_address,
-		function="sign_up",
+		function="signup_user",
 		gas_limit=60000000,
+		native_transfer_amount=native_amount,
 		arguments=[]
 	)
 	call_transaction.nonce = nonce_holder.get_nonce_then_increment()
 	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
-	print(f'>>>Performing mutable call to sign_up...')
+	print(f'>>>Performing mutable call to signup_user...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-	pass
 
 def mutate_clear_user(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	signer = UserSigner.from_pem_file(Path(wallet_path))
@@ -380,5 +354,4 @@ def mutate_clear_user(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 	print(f'>>>Performing mutable call to clear_user...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-	pass
 
