@@ -70,7 +70,7 @@ def infinite_pooling():
     latest_nonce = 0
     while True:
         print("Pooling latest SC transactions...")
-        transactions = get_latest_sc_transactions(SC_ADDR, 0, 5)
+        transactions = get_latest_sc_transactions(SC_ADDR, 0, 1)
         new_latest_nonce = transactions[0]['nonce']
         new_transactions = sorted([tx for tx in transactions if tx['nonce'] > latest_nonce], key=lambda x: x['nonce'], reverse=False)
         txHashes = [tx['txHash'] for tx in new_transactions]
@@ -86,7 +86,7 @@ def infinite_pooling():
                     try:
                         event_identifier = event['identifier']
                         if event_identifier in show_all_ignore_events():
-                            print(f"Ignored event {event_identifier} for transaction {txHash}!")
+                            # print(f"Ignored event {event_identifier} for transaction {txHash}!")
                             continue
                         
                         event_name = base64_string_to_string(event['topics'][0].rstrip('\x00'))
@@ -102,6 +102,6 @@ def infinite_pooling():
         else:
             print("No new transactions found.")
             
-        time.sleep(1)
+        time.sleep(6)
 
 infinite_pooling()

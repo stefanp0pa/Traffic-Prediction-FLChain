@@ -2,37 +2,42 @@
 
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
-use multiversx_sc::codec::TopEncodeMulti;
 
 mod role;
 mod filetype;
+mod evaluation_status;
 
 use role::Role;
 use filetype::FileType;
+use evaluation_status::EvaluationStatus;
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct GraphTopology<M: ManagedTypeApi> {
     pub vertices_count: u64,
     pub edges_count: u64,
     pub owner: ManagedAddress<M>,
-    pub storage_addr: [u8; 46],
+    pub storage_addr: [u8; 46], // IPFS hash CDv1
     pub timestamp: u64,
     pub hash: [u8; 32],
 }
 
-#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, Copy)]
-pub struct User {
-    role: Role
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
+pub struct User<M: ManagedTypeApi> {
+    role: Role,
+    addr: ManagedAddress<M>,
 }
 
-#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
-pub struct File<M: ManagedTypeApi> {
-    file_location: ManagedBuffer<M>,
-    file_hash: [u8; 32],
-    approval_evaluators: ManagedVec<M, ManagedAddress<M>>,
-    disapproval_evaluators: ManagedVec<M, ManagedAddress<M>>,
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, ManagedVecItem)]
+pub struct File {
+    file_location: [u8; 46], // IPFS hash CDv1
     file_type: FileType,
-    epoch: u64
+    round: usize
+}
+
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, ManagedVecItem)]
+pub struct Evaluation<M: ManagedTypeApi> {
+    evaluator: ManagedAddress<M>,
+    status: EvaluationStatus,
 }
 
 #[multiversx_sc::contract]
@@ -80,25 +85,82 @@ pub trait Trafficflchain {
         self.network_cleared_event(city_id);
     }
 
-    // #[view]
-    // fn get_local_updates(&self) -> ManagedVec<u32> {
-
-    //     // let session_id = self.active_session_manager().get().session_id;
-    //     // let version = self.version(session_id).get();
-    //     // let mut result: ManagedVec<ManagedBuffer> = ManagedVec::new();
-    //     // for update in self.local_updates(session_id, version).iter() {
-    //     //     result.push(update.file_location);
-    //     // }
-    //     let mut a = ManagedVec::new();
-    //     a.push(1);
-    //     a.push(2);
-    //     a.push(3);
-    //     a
-    // }
-
     // Data ------------------------------------------------------------------
     #[endpoint]
-    fn publish_data_batch(&self) {
+    fn upload_file(
+        &self, file_location: [u8; 46], file_type: FileType, round: usize) {
+        let caller = self.blockchain().get_caller();
+        let file = File { file_location, file_type, round };
+
+        let round = self.round().get();
+        self.files(file_location.clone()).set(file);
+        self.file_locations().insert(file_location.clone());
+        self.author_files(caller.clone()).insert(file_location.clone());
+        self.file_authors(file_location.clone()).set(caller.clone());
+        self.round_files(round).insert(file_location.clone());
+        self.files_count().update(|count| { *count += 1 });
+
+        self.upload_file_event(file_location, file_type, round, caller);
+    }
+
+    #[endpoint]
+    fn clear_file(&self, file_location: [u8; 46]) {
+        if self.files(file_location.clone()).is_empty() {
+            sc_panic!("File does not exist!");
+        }
+        else {
+            let file_author = self.file_authors(file_location.clone()).get();
+            let caller = self.blockchain().get_caller();
+            
+            // require!(
+            //     caller == author,
+            //     "Only the author can clear the file!"
+            // );
+
+            let round = self.files(file_location.clone()).get().round;
+            let file = self.files(file_location.clone()).get();
+            self.files(file_location.clone()).clear();
+            self.file_locations().swap_remove(&file_location.clone());
+            self.author_files(file_author.clone()).swap_remove(&file_location.clone());
+            self.file_authors(file_location.clone()).clear();
+            self.round_files(round).swap_remove(&file_location.clone());
+            self.file_evaluations(file_location.clone()).clear();
+            self.files_count().update(|count| { *count -= 1 });
+            self.clear_file_event(file_location, file.file_type, round, file_author);
+        }
+    }
+
+    #[endpoint]
+    fn evaluate_file(&self, file_location: [u8; 46], status: EvaluationStatus) {
+        let caller = self.blockchain().get_caller();
+        if self.files(file_location.clone()).is_empty() {
+            sc_panic!("File does not exist!");
+        }
+        else {
+            self.file_evaluations(file_location.clone()).insert(Evaluation {
+                evaluator: caller.clone(),
+                status
+            });
+            self.evaluate_file_event(file_location, status, caller);
+        }
+    }
+
+    #[view]
+    fn get_file_evaluations(&self, file_location: [u8; 46]) -> ManagedVec<Evaluation<Self::Api>> {
+        let mut output: ManagedVec<Evaluation<Self::Api>> = ManagedVec::new();
+        for evaluation in self.file_evaluations(file_location.clone()).iter() {
+            output.push(evaluation);
+        }
+        output
+    }
+
+    #[view]
+    fn get_all_round_files(&self, round: usize) -> ManagedVec<File> {
+        let mut output: ManagedVec<File> = ManagedVec::new();
+        for file in self.round_files(round).iter() {
+            output.push(self.files(file.clone()).get());
+        }
+        output
     }
 
     // Trainers --------------------------------------------------------------
@@ -116,15 +178,18 @@ pub trait Trafficflchain {
         }
         else {
             let staked_amount = self.call_value().egld_value().clone_value();
+            let user_role = Role::Undefined;
             let user = User {
-                role: Role::Undefined
+                addr: caller.clone(),
+                role: user_role
             };
 
             self.users(caller.clone()).set(user);
+            self.user_addresses().insert(caller.clone());
             self.stakes(caller.clone()).set(staked_amount.clone());
-            self.reputations(caller.clone()).set(0u32);
-            self.users_count().set(self.users_count().get() + 1);
-            self.signup_user_event(caller, staked_amount.clone(), user.role); // Pass a reference to staked_amount
+            self.reputations(caller.clone()).set(0);
+            self.users_count().update(|count| { *count += 1 });
+            self.signup_user_event(caller, staked_amount.clone(), user_role);
         }
     }
 
@@ -138,49 +203,48 @@ pub trait Trafficflchain {
         else {
             self.send().direct_egld(&caller, &self.stakes(caller.clone()).get());
             self.stakes(caller.clone()).clear();
-            self.users(caller.clone()).clear(); 
+            self.users(caller.clone()).clear();
+            self.user_addresses().swap_remove(&caller.clone());
             self.reputations(caller.clone()).clear();
-            self.users_count().set(self.users_count().get() - 1);
+            self.users_count().update(|count| { *count -= 1 });
             self.user_cleared_event(caller.clone());
         }
     }
 
-    // #[view]
-    // fn get_users_by_role(&self, role: Role) -> ManagedVec<ManagedAddress> {
-    //     let mut output: ManagedVec<ManagedAddress> = ManagedVec::new();
-    //     for user in self.users()
-    //         .iter().filter {
-    //         if user.role == role {
-    //             output.push(user);
-    //         }
-    //     }
-    //     output
-    // }
+    #[view]
+    fn get_users_by_role(&self, role: Role) -> ManagedVec<ManagedAddress> {
+        let mut output: ManagedVec<ManagedAddress> = ManagedVec::new();
+        for user in self.user_addresses().iter() {
+            if self.users(user.clone()).get().role == role {
+                output.push(user);
+            }
+        }
+        output
+    }
 
-    // #[view]
-    // fn get_serialized_user_data(&self, user_addr: ManagedAddress) -> ManagedVec<ManagedBuffer<Self::Api>> {
-    //     require!(
-    //         !self.users(user_addr.clone()).is_empty(),
-    //         "User does not exist!"
-    //     );
+    #[endpoint]
+    fn update_reputation(&self, user_addr: ManagedAddress, reputation: usize) {
+        require!(
+            !self.users(user_addr.clone()).is_empty(),
+            "User does not exist!"
+        );
 
-    //     let mut output: ManagedVec<ManagedBuffer<Self::Api>> = ManagedVec::new();
-    //     let _ = self.users(user_addr.clone()).multi_encode(&mut output);
-    //     output
-    // }
+        self.reputations(user_addr.clone()).set(reputation);
+        self.reputation_updated_event(user_addr, reputation);
+    }
 
-    // #[view]
-    // fn get_serialized_network_data(&self, city_id: u64) -> GraphTopology<Self::Api> {
-    //     require!(
-    //         !self.graph_networks(city_id).is_empty(),
-    //         "Network does not exist!"
-    //     );
+    // Rounds ----------------------------------------------------------------
+    #[endpoint]
+    fn next_round(&self) {
+        self.round().update(|round| { *round += 1 });
+        self.set_round_event(self.round().get());
+    }
 
-    //     self.graph_networks(city_id).get()
-    //     // let mut output: ManagedBuffer<Self::Api> = ManagedBuffer::new();
-    //     // let _ = self.graph_networks(city_id).get().top_encode(&mut output);
-    //     // output
-    // }
+    #[endpoint]
+    fn set_round(&self, round: usize) {
+        self.round().set(round);
+        self.set_round_event(round);
+    }
 
     // Storage mappers -------------------------------------------------------
     #[view(get_graph_network)]
@@ -189,7 +253,19 @@ pub trait Trafficflchain {
 
     #[view(get_user)]
     #[storage_mapper("users")]
-    fn users(&self, user_addr: ManagedAddress) -> SingleValueMapper<User>;
+    fn users(&self, user_addr: ManagedAddress) -> SingleValueMapper<User<Self::Api>>;
+
+    #[view(get_user_addresses)]
+    #[storage_mapper("user_addresses")]
+    fn user_addresses(&self) -> UnorderedSetMapper<ManagedAddress>;
+
+    #[view(get_file)]
+    #[storage_mapper("files")]
+    fn files(&self, file_location: [u8; 46]) -> SingleValueMapper<File>;
+
+    #[view(get_file_locations)]
+    #[storage_mapper("file_locations")]
+    fn file_locations(&self) -> UnorderedSetMapper<[u8; 46]>;
 
     #[view(get_stake)]
     #[storage_mapper("stakes")]
@@ -197,19 +273,35 @@ pub trait Trafficflchain {
 
     #[view(get_reputation)]
     #[storage_mapper("reputations")]
-    fn reputations(&self, user_addr: ManagedAddress) -> SingleValueMapper<u32>;
+    fn reputations(&self, user_addr: ManagedAddress) -> SingleValueMapper<usize>;
 
-    #[view(get_files)]
-    #[storage_mapper("files")]
-    fn files(&self, author_addr: ManagedAddress) -> UnorderedSetMapper<File<Self::Api>>;
+    #[view(file_evaluations)]
+    #[storage_mapper("file_evaluations")]
+    fn file_evaluations(&self, file_location: [u8; 46]) -> UnorderedSetMapper<Evaluation<Self::Api>>;
 
-    #[view(get_users_count)]
-    #[storage_mapper("users_count")]
-    fn users_count(&self) -> SingleValueMapper<u64>;
+    #[view(get_author_files)]
+    #[storage_mapper("author_files")]
+    fn author_files(&self, author_addr: ManagedAddress) -> UnorderedSetMapper<[u8; 46]>;
+
+    #[view(get_file_author)]
+    #[storage_mapper("file_authors")]
+    fn file_authors(&self, file_location: [u8; 46]) -> SingleValueMapper<ManagedAddress>;
+
+    #[view(get_round_files)]
+    #[storage_mapper("round_files")]
+    fn round_files(&self, round: usize) -> UnorderedSetMapper<[u8; 46]>;
 
     #[view(get_files_count)]
     #[storage_mapper("files_count")]
-    fn files_count(&self) -> SingleValueMapper<u64>;
+    fn files_count(&self) -> SingleValueMapper<usize>;
+
+    #[view(get_users_count)]
+    #[storage_mapper("users_count")]
+    fn users_count(&self) -> SingleValueMapper<usize>;
+
+    #[view(get_round)]
+    #[storage_mapper("round")]
+    fn round(&self) -> SingleValueMapper<usize>;
 
 
     // Events ----------------------------------------------------------------
@@ -234,7 +326,38 @@ pub trait Trafficflchain {
     fn user_cleared_event(
         &self,
         #[indexed] user_addr: ManagedAddress);
+    
+    #[event("reputation_updated_event")]
+    fn reputation_updated_event(
+        &self,
+        #[indexed] user_addr: ManagedAddress,
+        #[indexed] new_reputation: usize);
 
-    #[event("data_batch_published_event")]
-    fn data_batch_published_event(&self);
+    #[event("set_round_event")]
+    fn set_round_event(
+        &self,
+        #[indexed] round: usize);
+    
+    #[event("upload_file_event")]
+    fn upload_file_event(
+        &self,
+        #[indexed] file_location: [u8; 46],
+        #[indexed] file_type: FileType,
+        #[indexed] round: usize,
+        #[indexed] author_addr: ManagedAddress);
+
+    #[event("clear_file_event")]
+    fn clear_file_event(
+        &self,
+        #[indexed] file_location: [u8; 46],
+        #[indexed] file_type: FileType,
+        #[indexed] round: usize,
+        #[indexed] author_addr: ManagedAddress);
+
+    #[event("evaluate_file_event")]
+    fn evaluate_file_event(
+        &self,
+        #[indexed] file_location: [u8; 46],
+        #[indexed] status: EvaluationStatus,
+        #[indexed] evaluator: ManagedAddress);
 }

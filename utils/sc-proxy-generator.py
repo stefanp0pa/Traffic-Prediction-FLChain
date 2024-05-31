@@ -50,6 +50,11 @@ def insert_constants(file_handler):
     file_handler.write("sc_factory = SmartContractTransactionsFactory(transaction_factory_config, TokenComputer())\n")
     file_handler.write("contract_address = Address.from_bech32(SC_ADDR)\n")
     file_handler.write("network_provider = ApiNetworkProvider(NETWORK_PROVIDER)\n\n")
+    
+    file_handler.write("# Dictionary to store the nonce for each user\n")
+    file_handler.write("# The chain gateway is slower in updating the nonce, so we need\n")
+    file_handler.write("# to keep track of it to avoid nonce desynchronization errors\n")
+    file_handler.write("nonce_cache = {} \n\n")
     # self.user_addr = Address.from_bech32(user_addr)
     # self.signer = UserSigner.from_pem_file(Path(self.wallet_path))
     # self.nonce_holder = AccountNonceHolder(self.network_provider.get_account(self.user_addr).nonce)
@@ -75,12 +80,20 @@ def choose_decode_method(param_type):
         return 'base64_string_to_numeric'
     elif param_type == 'Address':
         return 'base64_string_to_bech32_address'
-    elif param_type == "List<byte" or param_type == "List<u8>":
+    elif param_type == 'List<Address>':
+        return 'base64_string_to_array_of_bech32_addresses'
+    elif param_type == "List<byte>" or param_type == "List<u8>":
         return 'base64_string_to_bytes'
+    elif param_type == "List<File>":
+        return 'base64_string_to_file_array'
+    elif param_type == "File":
+        return 'base64_string_to_file'
     elif param_type == "bytes":
         return 'base64_string_to_bytes'
     elif param_type == "GraphTopology":
         return 'base64_string_to_graphTopology'
+    elif param_type == "variadic<array46<u8>>":
+        return 'base64_string_to_ipfs_addresses'
     else:
         return 'base64_string_to_numeric'
 
@@ -98,11 +111,9 @@ ignored_endpoints = ['upgrade']
 
 def process_query_input(input):
     input_type = input['type']
-    print(input_type)
     if input_type == 'Address':
         return f"Address.new_from_bech32({input['name']})"
     else:
-        print("caca")
         return input['name']
 
 def generate_for_immutable_endpoint(file_handle, endpoint_data):
@@ -141,8 +152,7 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     output_type = endpoint_data['outputs'][0]['type']
     print(f"Output type: {output_type} for endpoint {endpoint_data['name']}")
     file_handle.write(f"\toutput_type = \'{output_type}\'\n")
-    file_handle.write("\tif not output_type.startswith('List<') or not output_type.startswith('variadic<'):\n")
-    file_handle.write("\t\treturn_data = return_data[0]\n")
+    file_handle.write("\treturn_data = return_data[0]\n")
     file_handle.write(f"\tdecode_method = {choose_decode_method(output_type)}\n")
     file_handle.write("\tdecoded_response = decode_method(return_data)\n")
     file_handle.write("\tprint(decoded_response)\n\n")
@@ -177,7 +187,11 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
     file_handle.write(', '.join([f"{input['name']}" for input in endpoint_data['inputs']]))
     file_handle.write("]\n")
     file_handle.write("\t)\n")
-    file_handle.write("\tcall_transaction.nonce = nonce_holder.get_nonce_then_increment()\n")
+    file_handle.write("\tlocal_nonce = nonce_cache.get(caller_user_addr, -1)\n")
+    file_handle.write("\tgateway_nonce = nonce_holder.get_nonce_then_increment()\n")
+    file_handle.write("\tcurr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one\n")
+    file_handle.write("\tnonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value\n")
+    file_handle.write("\tcall_transaction.nonce = curr_nonce\n")
     file_handle.write("\tcall_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))\n")
     file_handle.write(f"\tprint(f'>>>Performing mutable call to {endpoint_data['name']}...')\n")
     file_handle.write("\tresponse = network_provider.send_transaction(call_transaction)\n")

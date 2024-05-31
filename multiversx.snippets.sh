@@ -25,6 +25,7 @@ deploy_contract() {
         --bytecode=${BYTECODE} \
         --pem=${MASTER_WALLET} \
         --gas-limit=${GAS_LIMIT} \
+        --metadata-payable \
         --proxy=${PROXY} --chain=${CHAIN_ID} \
         --outfile="deploy-devnet.interaction.json" --send || return
 

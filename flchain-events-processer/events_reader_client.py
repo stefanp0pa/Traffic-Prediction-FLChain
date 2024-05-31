@@ -55,6 +55,13 @@ def base64_string_to_bech32_address(encoded_string):
     bech32_address = hex_string_to_bech32_address(decoded_bytes)
     return bech32_address
 
+def base64_string_to_array_of_bech32_addresses(encoded_string):
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    bech32_addresses = []
+    for i in range(0, len(decoded_bytes), 64):
+        bech32_addresses.append(hex_string_to_bech32_address(decoded_bytes[i:i + 64]))
+    return bech32_addresses
+
 def base64_string_to_graphTopology(encoded_string):
     decoded_bytes = base64_string_to_hex_string(encoded_string)
     vertices_count = decoded_bytes[:16] # 8 bytes x 2 = 16 chars for vertices count
@@ -73,6 +80,52 @@ def base64_string_to_graphTopology(encoded_string):
     }
     print(decoded_response)
     return decoded_response
+
+def hex_string_to_file(hex_string):
+    if not hex_string:
+        return 0
+    file_location = hex_string[:92] # 46 bytes x 2 = 92 chars for file location
+    file_type = hex_string[92:94] # 2 bytes x 1 = 2 chars for file type
+    round = hex_string[94:102] # 2 bytes x 4 = 8 chars for round
+    decoded_response = {
+        'file_location': hex_string_to_string(file_location),
+        'file_type': hex_string_to_numeric(file_type),
+        'round': hex_string_to_numeric(round)
+    }
+    return decoded_response
+
+def base64_string_to_file_array(encoded_string):
+    if not encoded_string:
+        return []
+
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    file_struct_size = 102
+    segments = []
+    for i in range(0, len(decoded_bytes), file_struct_size):
+        segments.append(decoded_bytes[i:i + file_struct_size])
+    
+    decoded_response = []
+    for i in range(0, len(segments)):
+        segment = segments[i]    
+        decoded_response.append(hex_string_to_file(segment))
+        
+    print(decoded_response)
+    return decoded_response
+
+def base64_string_to_file(encoded_string):
+    if not encoded_string:
+        return 0
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    decoded_response = hex_string_to_file(decoded_bytes)
+    return decoded_response
+
+def base64_string_to_ipfs_addresses(encoded_string):
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    ipfs_addresses = []
+    ipfs_cdv1_addr_size = 46 * 2
+    for i in range(0, len(decoded_bytes), ipfs_cdv1_addr_size):
+        ipfs_addresses.append(hex_string_to_string(decoded_bytes[i:i + ipfs_cdv1_addr_size]))
+    return ipfs_addresses
 
 def read_network_setup_event(payload):
 	event_name = base64_string_to_string(payload[0])
@@ -100,9 +153,43 @@ def read_user_cleared_event(payload):
 	return json.dumps({'user_addr': user_addr, 'identifier': event_name})
 
 
-def read_data_batch_published_event(payload):
+def read_reputation_updated_event(payload):
 	event_name = base64_string_to_string(payload[0])
-	return json.dumps({'identifier': event_name})
+	user_addr = base64_string_to_bech32_address(payload[1])
+	new_reputation = base64_string_to_numeric(payload[2])
+	return json.dumps({'user_addr': user_addr, 'new_reputation': new_reputation, 'identifier': event_name})
+
+
+def read_set_round_event(payload):
+	event_name = base64_string_to_string(payload[0])
+	round = base64_string_to_numeric(payload[1])
+	return json.dumps({'round': round, 'identifier': event_name})
+
+
+def read_upload_file_event(payload):
+	event_name = base64_string_to_string(payload[0])
+	file_location = base64_string_to_numeric(payload[1])
+	file_type = base64_string_to_numeric(payload[2])
+	round = base64_string_to_numeric(payload[3])
+	author_addr = base64_string_to_bech32_address(payload[4])
+	return json.dumps({'file_location': file_location, 'file_type': file_type, 'round': round, 'author_addr': author_addr, 'identifier': event_name})
+
+
+def read_clear_file_event(payload):
+	event_name = base64_string_to_string(payload[0])
+	file_location = base64_string_to_numeric(payload[1])
+	file_type = base64_string_to_numeric(payload[2])
+	round = base64_string_to_numeric(payload[3])
+	author_addr = base64_string_to_bech32_address(payload[4])
+	return json.dumps({'file_location': file_location, 'file_type': file_type, 'round': round, 'author_addr': author_addr, 'identifier': event_name})
+
+
+def read_evaluate_file_event(payload):
+	event_name = base64_string_to_string(payload[0])
+	file_location = base64_string_to_numeric(payload[1])
+	status = base64_string_to_numeric(payload[2])
+	evaluator = base64_string_to_bech32_address(payload[3])
+	return json.dumps({'file_location': file_location, 'status': status, 'evaluator': evaluator, 'identifier': event_name})
 
 
 def read_transferValueOnly(payload):
@@ -116,7 +203,11 @@ event_names = ['network_setup_event',
 'network_cleared_event',
 'signup_user_event',
 'user_cleared_event',
-'data_batch_published_event',
+'reputation_updated_event',
+'set_round_event',
+'upload_file_event',
+'clear_file_event',
+'evaluate_file_event',
 'transferValueOnly']
 
 ignore_events = ['SCUpgrade', 'writeLog', 'completedTxEvent', 'signalError', 'internalVMErrors']
@@ -133,7 +224,11 @@ def use_read_method(event_name):
 		'network_cleared_event': read_network_cleared_event,
 		'signup_user_event': read_signup_user_event,
 		'user_cleared_event': read_user_cleared_event,
-		'data_batch_published_event': read_data_batch_published_event,
+		'reputation_updated_event': read_reputation_updated_event,
+		'set_round_event': read_set_round_event,
+		'upload_file_event': read_upload_file_event,
+		'clear_file_event': read_clear_file_event,
+		'evaluate_file_event': read_evaluate_file_event,
 		'transferValueOnly': read_transferValueOnly,
 	}
 

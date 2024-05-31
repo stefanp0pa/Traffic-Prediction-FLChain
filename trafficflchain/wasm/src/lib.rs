@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           13
+// Endpoints:                           28
 // Async Callback (empty):               1
-// Total number of exported functions:  15
+// Total number of exported functions:  30
 
 #![no_std]
 #![allow(internal_features)]
@@ -23,16 +23,31 @@ multiversx_sc_wasm_adapter::endpoints! {
         upgrade => upgrade
         setup_network => setup_network
         clear_network => clear_network
-        publish_data_batch => publish_data_batch
+        upload_file => upload_file
+        clear_file => clear_file
+        evaluate_file => evaluate_file
+        get_file_evaluations => get_file_evaluations
+        get_all_round_files => get_all_round_files
         signup_user => signup_user
         clear_user => clear_user
+        get_users_by_role => get_users_by_role
+        update_reputation => update_reputation
+        next_round => next_round
+        set_round => set_round
         get_graph_network => graph_networks
         get_user => users
+        get_user_addresses => user_addresses
+        get_file => files
+        get_file_locations => file_locations
         get_stake => stakes
         get_reputation => reputations
-        get_files => files
-        get_users_count => users_count
+        file_evaluations => file_evaluations
+        get_author_files => author_files
+        get_file_author => file_authors
+        get_round_files => round_files
         get_files_count => files_count
+        get_users_count => users_count
+        get_round => round
     )
 }
 
