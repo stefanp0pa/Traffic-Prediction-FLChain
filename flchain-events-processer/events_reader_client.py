@@ -166,6 +166,12 @@ def read_set_round_event(payload):
 	return json.dumps({'round': round, 'identifier': event_name})
 
 
+def read_set_stage_event(payload):
+	event_name = base64_string_to_string(payload[0])
+	stage = base64_string_to_numeric(payload[1])
+	return json.dumps({'stage': stage, 'identifier': event_name})
+
+
 def read_upload_file_event(payload):
 	event_name = base64_string_to_string(payload[0])
 	file_location = base64_string_to_numeric(payload[1])
@@ -205,6 +211,7 @@ event_names = ['network_setup_event',
 'user_cleared_event',
 'reputation_updated_event',
 'set_round_event',
+'set_stage_event',
 'upload_file_event',
 'clear_file_event',
 'evaluate_file_event',
@@ -226,6 +233,7 @@ def use_read_method(event_name):
 		'user_cleared_event': read_user_cleared_event,
 		'reputation_updated_event': read_reputation_updated_event,
 		'set_round_event': read_set_round_event,
+		'set_stage_event': read_set_stage_event,
 		'upload_file_event': read_upload_file_event,
 		'clear_file_event': read_clear_file_event,
 		'evaluate_file_event': read_evaluate_file_event,

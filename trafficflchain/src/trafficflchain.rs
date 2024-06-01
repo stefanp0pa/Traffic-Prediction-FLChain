@@ -6,10 +6,18 @@ multiversx_sc::derive_imports!();
 mod role;
 mod filetype;
 mod evaluation_status;
+mod stage;
 
 use role::Role;
 use filetype::FileType;
 use evaluation_status::EvaluationStatus;
+use stage::Stage;
+
+// Former SC: erd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s
+// Former Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
+
+// New SC: erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v
+// New Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct GraphTopology<M: ManagedTypeApi> {
@@ -43,7 +51,13 @@ pub struct Evaluation<M: ManagedTypeApi> {
 #[multiversx_sc::contract]
 pub trait Trafficflchain {
     #[init]
-    fn init(&self) {}
+    fn init(&self) {
+        self.round().set(0);
+        self.stage().set(Stage::Undefined);
+        self.graphs_count().set(0);
+        self.files_count().set(0);
+        self.users_count().set(0);
+    }
 
     #[upgrade]
     fn upgrade(&self) {}
@@ -67,6 +81,7 @@ pub trait Trafficflchain {
             "Network already exists, please clear it first."
         );
         self.graph_networks(city_id).set(graph);
+        self.graphs_count().update(|count| { *count += 1 });
         self.network_setup_event(city_id);
     }
 
@@ -82,6 +97,7 @@ pub trait Trafficflchain {
         );
 
         self.graph_networks(city_id).clear();
+        self.graphs_count().update(|count| { *count -= 1 });
         self.network_cleared_event(city_id);
     }
 
@@ -246,6 +262,13 @@ pub trait Trafficflchain {
         self.set_round_event(round);
     }
 
+    // Stages ----------------------------------------------------------------
+    #[endpoint]
+    fn set_stage(&self, stage: Stage) {
+        self.stage().set(stage);
+        self.set_stage_event(stage);
+    }
+
     // Storage mappers -------------------------------------------------------
     #[view(get_graph_network)]
     #[storage_mapper("graph_networks")]
@@ -275,11 +298,11 @@ pub trait Trafficflchain {
     #[storage_mapper("reputations")]
     fn reputations(&self, user_addr: ManagedAddress) -> SingleValueMapper<usize>;
 
-    #[view(file_evaluations)]
+    // #[view(file_evaluations)] //TODO: investigate buggy return value
     #[storage_mapper("file_evaluations")]
     fn file_evaluations(&self, file_location: [u8; 46]) -> UnorderedSetMapper<Evaluation<Self::Api>>;
 
-    #[view(get_author_files)]
+    // #[view(get_author_files)]
     #[storage_mapper("author_files")]
     fn author_files(&self, author_addr: ManagedAddress) -> UnorderedSetMapper<[u8; 46]>;
 
@@ -287,7 +310,7 @@ pub trait Trafficflchain {
     #[storage_mapper("file_authors")]
     fn file_authors(&self, file_location: [u8; 46]) -> SingleValueMapper<ManagedAddress>;
 
-    #[view(get_round_files)]
+    // #[view(get_round_files)]
     #[storage_mapper("round_files")]
     fn round_files(&self, round: usize) -> UnorderedSetMapper<[u8; 46]>;
 
@@ -299,10 +322,17 @@ pub trait Trafficflchain {
     #[storage_mapper("users_count")]
     fn users_count(&self) -> SingleValueMapper<usize>;
 
+    #[view(get_graphs_count)]
+    #[storage_mapper("graphs_count")]
+    fn graphs_count(&self) -> SingleValueMapper<usize>;
+
     #[view(get_round)]
     #[storage_mapper("round")]
     fn round(&self) -> SingleValueMapper<usize>;
 
+    #[view(get_stage)]
+    #[storage_mapper("stage")]
+    fn stage(&self) -> SingleValueMapper<Stage>;
 
     // Events ----------------------------------------------------------------
     #[event("network_setup_event")]
@@ -337,6 +367,11 @@ pub trait Trafficflchain {
     fn set_round_event(
         &self,
         #[indexed] round: usize);
+    
+    #[event("set_stage_event")]
+    fn set_stage_event(
+        &self,
+        #[indexed] stage: Stage);
     
     #[event("upload_file_event")]
     fn upload_file_event(

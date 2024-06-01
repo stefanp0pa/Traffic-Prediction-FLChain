@@ -34,6 +34,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         update_reputation => update_reputation
         next_round => next_round
         set_round => set_round
+        set_stage => set_stage
         get_graph_network => graph_networks
         get_user => users
         get_user_addresses => user_addresses
@@ -41,13 +42,12 @@ multiversx_sc_wasm_adapter::endpoints! {
         get_file_locations => file_locations
         get_stake => stakes
         get_reputation => reputations
-        file_evaluations => file_evaluations
-        get_author_files => author_files
         get_file_author => file_authors
-        get_round_files => round_files
         get_files_count => files_count
         get_users_count => users_count
+        get_graphs_count => graphs_count
         get_round => round
+        get_stage => stage
     )
 }
 

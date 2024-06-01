@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 
 import base64
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v"
 WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem" # replace with your own wallet
 CHAIN_ID = "D" # D - devent, T - testnet
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"

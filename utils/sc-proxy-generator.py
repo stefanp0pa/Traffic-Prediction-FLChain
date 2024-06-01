@@ -1,9 +1,9 @@
 import json
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
-CHAIN_NAME = "devent" if CHAIN_ID == "D" else "testnet"
+CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
 GAS_LIMIT = 60000000
 ABI_SOURCE  = "/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
 CLIENT_DEST = f"/Users/stefan/Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py"

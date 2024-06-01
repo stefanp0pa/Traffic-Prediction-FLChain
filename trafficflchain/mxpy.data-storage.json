@@ -1,6 +1,6 @@
 {
     "*": {
-        "address-devnet": "WARNING  cli.data: Always review --expression parameters before executing this command!                                                 cli_data.py:40\nerd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s",
-        "deployTransaction-devnet": "WARNING  cli.data: Always review --expression parameters before executing this command!                                                 cli_data.py:40\n6f65fd0199f507337f7ed4d8dcc2de867b5b22e23a4b91787cadd85d1ba30b84"
+        "address-devnet": "erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v",erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v
+        "deployTransaction-devnet": "06287ce3d7335fe3d08b2c92800986080d007ef0299497316c7d34fc01779acb"
     }
 }
