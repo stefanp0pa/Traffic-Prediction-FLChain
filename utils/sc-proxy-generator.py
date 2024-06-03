@@ -27,14 +27,14 @@ def read_abi_file(file_path = ABI_SOURCE):
  
 def insert_imports(file_handler):
     file_handler.write("from pathlib import Path\n")
-    file_handler.write("from multiversx_sdk_core import TokenComputer\n")
-    file_handler.write("from multiversx_sdk_core.transaction_factories import SmartContractTransactionsFactory\n")
-    file_handler.write("from multiversx_sdk_core import Transaction, TransactionComputer, Address\n")
-    file_handler.write("from multiversx_sdk_wallet.user_signer import UserSigner\n")
-    file_handler.write("from multiversx_sdk_core.transaction_factories import TransactionsFactoryConfig\n")
-    file_handler.write("from multiversx_sdk_core import ContractQueryBuilder\n")
-    file_handler.write("from multiversx_sdk_network_providers import ApiNetworkProvider\n")
-    file_handler.write("from multiversx_sdk_core import AccountNonceHolder\n\n")    
+    file_handler.write("from multiversx_sdk import TokenComputer\n")
+    file_handler.write("from multiversx_sdk import SmartContractTransactionsFactory\n")
+    file_handler.write("from multiversx_sdk import Transaction, TransactionComputer, Address\n")
+    file_handler.write("from multiversx_sdk import UserSigner\n")
+    file_handler.write("from multiversx_sdk import TransactionsFactoryConfig\n")
+    file_handler.write("from multiversx_sdk import ContractQueryBuilder\n")
+    file_handler.write("from multiversx_sdk import ApiNetworkProvider\n")
+    file_handler.write("from multiversx_sdk import AccountNonceHolder\n\n")    
 
 def insert_constants(file_handler):
     file_handler.write(f"SC_ADDR = \"{SC_ADDR}\"\n")
@@ -47,7 +47,7 @@ def insert_constants(file_handler):
     
     file_handler.write("transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)\n")
     file_handler.write("transaction_computer = TransactionComputer()\n")
-    file_handler.write("sc_factory = SmartContractTransactionsFactory(transaction_factory_config, TokenComputer())\n")
+    file_handler.write("sc_factory = SmartContractTransactionsFactory(transaction_factory_config)\n")
     file_handler.write("contract_address = Address.from_bech32(SC_ADDR)\n")
     file_handler.write("network_provider = ApiNetworkProvider(NETWORK_PROVIDER)\n\n")
     

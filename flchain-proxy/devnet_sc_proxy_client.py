@@ -152,14 +152,14 @@ def base64_string_to_training_data(encoded_string):
 
 
 from pathlib import Path
-from multiversx_sdk_core import TokenComputer
-from multiversx_sdk_core.transaction_factories import SmartContractTransactionsFactory
-from multiversx_sdk_core import Transaction, TransactionComputer, Address
-from multiversx_sdk_wallet.user_signer import UserSigner
-from multiversx_sdk_core.transaction_factories import TransactionsFactoryConfig
-from multiversx_sdk_core import ContractQueryBuilder
-from multiversx_sdk_network_providers import ApiNetworkProvider
-from multiversx_sdk_core import AccountNonceHolder
+from multiversx_sdk import TokenComputer
+from multiversx_sdk import SmartContractTransactionsFactory
+from multiversx_sdk import Transaction, TransactionComputer, Address
+from multiversx_sdk import UserSigner
+from multiversx_sdk import TransactionsFactoryConfig
+from multiversx_sdk import ContractQueryBuilder
+from multiversx_sdk import ApiNetworkProvider
+from multiversx_sdk import AccountNonceHolder
 
 SC_ADDR = "erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r"
 CHAIN_ID = "D"
@@ -171,7 +171,7 @@ GAS_LIMIT = 60000000
 
 transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)
 transaction_computer = TransactionComputer()
-sc_factory = SmartContractTransactionsFactory(transaction_factory_config, TokenComputer())
+sc_factory = SmartContractTransactionsFactory(transaction_factory_config)
 contract_address = Address.from_bech32(SC_ADDR)
 network_provider = ApiNetworkProvider(NETWORK_PROVIDER)
 
@@ -1059,3 +1059,4 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
+mutate_test_event(3)
