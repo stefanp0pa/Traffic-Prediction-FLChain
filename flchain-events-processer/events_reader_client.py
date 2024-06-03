@@ -101,7 +101,7 @@ def hex_string_to_training_data(hex_string):
     cluster_adj_matrix_addr = hex_string[:92] # 46 bytes x 2 = 92 chars for cluster adjacency matrix address
     dataset_addr = hex_string[92:184] # 46 bytes x 2 = 92 chars for dataset address
     aggr_cluser_model_addr = hex_string[184:276] # 46 bytes x 2 = 92 chars for aggregated cluster model address
-    local_node_index = hex_string[276:278] # 2 bytes x 1 = 2 chars for local node index
+    local_node_index = hex_string[276:280] # 2 bytes x 2 = 4 chars for local node index
     decoded_response = {
         'cluster_adj_matrix_addr': hex_string_to_string(cluster_adj_matrix_addr),
         'dataset_addr': hex_string_to_string(dataset_addr),
@@ -125,7 +125,6 @@ def base64_string_to_file_array(encoded_string):
         segment = segments[i]    
         decoded_response.append(hex_string_to_file(segment))
         
-    print(decoded_response)
     return decoded_response
 
 def base64_string_to_file(encoded_string):
@@ -170,6 +169,19 @@ def base64_string_to_list_u16(encoded_string):
         u16_numbers.append(decoded_response)
     return u16_numbers
 
+def base64_string_to_list_cluster_node(encoded_string):
+    if not encoded_string:
+        return []
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    cluster_node_size = 8 # 4 bytes + 4 bytes
+    cluster_nodes = []
+    for i in range(0, len(decoded_bytes), cluster_node_size):
+        cluster_nodes.append({
+            'global_node_index': hex_string_to_numeric(decoded_bytes[i:i + 4]),
+            'local_node_index': hex_string_to_numeric(decoded_bytes[i + 4:i + 8])
+        })
+    return cluster_nodes
+
 def read_signup_user_event(payload):
 	event_name = base64_string_to_string(payload[0])
 	user_addr = base64_string_to_bech32_address(payload[1])
@@ -198,7 +210,7 @@ def read_set_stage_event(payload):
 
 def read_upload_file_event(payload):
 	event_name = base64_string_to_string(payload[0])
-	file_location = base64_string_to_numeric(payload[1])
+	file_location = base64_string_to_ipfs_address(payload[1])
 	file_type = base64_string_to_numeric(payload[2])
 	round = base64_string_to_numeric(payload[3])
 	author_addr = base64_string_to_bech32_address(payload[4])
@@ -207,7 +219,7 @@ def read_upload_file_event(payload):
 
 def read_clear_file_event(payload):
 	event_name = base64_string_to_string(payload[0])
-	file_location = base64_string_to_numeric(payload[1])
+	file_location = base64_string_to_ipfs_address(payload[1])
 	file_type = base64_string_to_numeric(payload[2])
 	round = base64_string_to_numeric(payload[3])
 	author_addr = base64_string_to_bech32_address(payload[4])
@@ -216,7 +228,7 @@ def read_clear_file_event(payload):
 
 def read_evaluate_file_event(payload):
 	event_name = base64_string_to_string(payload[0])
-	file_location = base64_string_to_numeric(payload[1])
+	file_location = base64_string_to_ipfs_address(payload[1])
 	status = base64_string_to_numeric(payload[2])
 	evaluator = base64_string_to_bech32_address(payload[3])
 	return json.dumps({'file_location': file_location, 'status': status, 'evaluator': evaluator, 'identifier': event_name})

@@ -9,9 +9,10 @@ def read_file_with_line_numbers(file_path):
         with open(file_path, 'r') as file:
             for line_number, line_content in enumerate(file, start=1):
                 line_content = line_content.strip()
-                print(f"Line {line_number}: {line_content}")
-                # mutate_clear_dataset_file(line_content, line_number)
+                print(f"Seeding dataset file {line_content} for {line_number}")
                 mutate_upload_dataset_file(line_content, line_number)
+                # mutate_clear_dataset_file(line_content, line_number)
+                # mutate_upload_dataset_file(line_content, line_number)
     except FileNotFoundError:
         print(f"The file at {file_path} was not found.")
     except Exception as e:

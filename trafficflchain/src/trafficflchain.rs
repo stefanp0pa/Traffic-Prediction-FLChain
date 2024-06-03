@@ -22,6 +22,8 @@ use stage::Stage;
 // New SC: erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r
 // New Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
 
+// New SC: erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m
+
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct GraphTopology<M: ManagedTypeApi> {
     pub vertices_count: u64,
@@ -117,6 +119,8 @@ pub trait Trafficflchain {
         }
     }
 
+
+    // The dataset file for each node, we only store the IPFS address and it is the consumer's responsibility to fetch it
     #[endpoint]
     fn upload_dataset_file(&self, file_location: [u8; 46], node_index: u16) {
         let author_addr = self.blockchain().get_caller();
@@ -124,6 +128,9 @@ pub trait Trafficflchain {
         self.node_datasets(node_index).set(file_location.clone());
     }
 
+    // This method should be used in-between the Training and Aggregation stages
+    // The trainer uploads the model file for a specific cluster and awaits evaluation
+    // Later, based on the evaluation score, the model may be considered in the Aggregation stage
     #[endpoint]
     fn upload_cluster_model_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
@@ -132,6 +139,8 @@ pub trait Trafficflchain {
         self.cluster_models(cluster_index, round).insert(file_location);
     }
 
+    // This method should be used following the Aggregation stage or right at the Seeding stage
+    // The aggregation file represents the new cluster model following a full training round
     #[endpoint]
     fn upload_cluster_aggregation_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
@@ -140,6 +149,7 @@ pub trait Trafficflchain {
         self.cluster_aggregation(cluster_index, round).set(file_location);
     }
 
+    // This method should be used in the Seeding stage when seeding the cluster structure
     #[endpoint]
     fn upload_adj_matrix_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
@@ -173,13 +183,16 @@ pub trait Trafficflchain {
 
 
 
-
-
+    // Cluster nodes description =============================================
+    // There is a many-to-many relationship between clusters and nodes
+    // A node can belong to multiple clusters
+    // A cluster can encompass multiple nodes
+    // We hold 2 storage mappers to encapsulate this relationship (cluster_nodes, node_clusters)
     #[endpoint]
     fn upload_cluster_description(&self, cluster_index: u16, global_node_index: u16, local_node_index: u16) {
         let cluster_node = ClusterNode {
-            global_node_index,
-            local_node_index
+            global_node_index: global_node_index,
+            local_node_index: local_node_index
         };
         self.cluster_nodes(cluster_index).insert(cluster_node);
         self.node_clusters(global_node_index).insert(cluster_index);
@@ -190,19 +203,13 @@ pub trait Trafficflchain {
         let cluster_node = self.cluster_nodes(cluster_index)
             .iter().find(|cn| cn.global_node_index == global_node_index).unwrap();
         self.cluster_nodes(cluster_index).swap_remove(&cluster_node);
+        
+        let node_cluster = self.node_clusters(global_node_index)
+            .iter().find(|cn| cn == &cluster_index).unwrap();
+        self.node_clusters(global_node_index).swap_remove(&node_cluster);
     }
 
-    // Training endpoints ====================================================
-
-    #[view]
-    fn get_all_round_files(&self, round: usize) -> ManagedVec<File> {
-        let mut output: ManagedVec<File> = ManagedVec::new();
-        for file in self.round_files(round).iter() {
-            output.push(self.files(file.clone()).get());
-        }
-        output
-    }
-
+    // Given a node X, we want to know all the clusters it belongs to
     #[view]
     fn get_all_clusters_per_node(&self, node_global_index: u16) -> ManagedVec<u16> {
         let mut output: ManagedVec<u16> = ManagedVec::new();
@@ -212,6 +219,34 @@ pub trait Trafficflchain {
         output
     }
 
+    // Given a cluster Y, we want to know all the nodes it encompasses
+    #[view]
+    fn get_all_nodes_per_cluster(&self, cluster_index: u16) -> ManagedVec<ClusterNode> {
+        let mut output: ManagedVec<ClusterNode> = ManagedVec::new();
+        for cluster_node in self.cluster_nodes(cluster_index).iter() {
+            output.push(cluster_node);
+        }
+        output
+    }
+
+
+    // Given a round, we want to know all the files that were uploaded in that round
+    #[view]
+    fn get_all_round_files(&self, round: usize) -> ManagedVec<File> {
+        let mut output: ManagedVec<File> = ManagedVec::new();
+        for file in self.round_files(round).iter() {
+            output.push(self.files(file.clone()).get());
+        }
+        output
+    }
+
+
+    // Gets the necessary data that a trainer requires to train a model
+    // Given a node X and a cluster Y as parameters, we want to know the following:
+    // - The adjacency matrix of the cluster Y
+    // - The dataset of the node X
+    // - The aggregated model of the cluster Y from the previous round (this is the baseline model for the new round)
+    // - The local index of the node X in the cluster Y
     #[view]
     fn get_training_data(&self, node_index: u16, cluster_index: u16) -> TrainingData {
         let adj_matrix = self.cluster_adj_matrices(cluster_index).get();
@@ -229,7 +264,7 @@ pub trait Trafficflchain {
         }
         let local_node_index = self.cluster_nodes(cluster_index)
             .iter().find(|cn| cn.global_node_index == node_index).unwrap().local_node_index;
-        if self.cluster_nodes(node_index).is_empty() {
+        if self.cluster_nodes(cluster_index).is_empty() {
             sc_panic!("Node does not belong to any cluster!");
         }
 
@@ -250,10 +285,7 @@ pub trait Trafficflchain {
             sc_panic!("File does not exist!");
         }
         else {
-            self.file_evaluations(file_location.clone()).insert(Evaluation {
-                evaluator: caller.clone(),
-                status
-            });
+            self.file_evaluations(file_location.clone()).insert(Evaluation { evaluator: caller.clone(), status });
             self.evaluate_file_event(file_location, status, caller);
         }
     }
@@ -316,9 +348,9 @@ pub trait Trafficflchain {
  
 
     
-
+    // This method should be used at the Aggregation stage, to get all the candidate models for the aggregation
     #[view]
-    fn get_aggregated_models(&self, cluster_index: u16, round_index: usize) -> ManagedVec<[u8; 46]> {
+    fn get_cluster_models_for_aggregation(&self, cluster_index: u16, round_index: usize) -> ManagedVec<[u8; 46]> {
         let mut output: ManagedVec<[u8; 46]> = ManagedVec::new();
         for model in self.cluster_models(cluster_index, round_index).iter() {
             output.push(model);
@@ -380,7 +412,6 @@ pub trait Trafficflchain {
     #[storage_mapper("cluster_adjacency_matrices")]
     fn cluster_adj_matrices(&self, cluster_index: u16) -> SingleValueMapper<[u8; 46]>;
 
-    // #[view(get_cluster_nodes)]
     #[storage_mapper("cluster_nodes")]
     fn cluster_nodes(&self, cluster_index: u16) -> UnorderedSetMapper<ClusterNode>;
 
@@ -400,7 +431,6 @@ pub trait Trafficflchain {
     #[storage_mapper("users")]
     fn users(&self, user_addr: ManagedAddress) -> SingleValueMapper<User<Self::Api>>;
 
-    // #[view(get_user_addresses)]
     #[storage_mapper("user_addresses")]
     fn user_addresses(&self) -> UnorderedSetMapper<ManagedAddress>;
 
@@ -408,7 +438,6 @@ pub trait Trafficflchain {
     #[storage_mapper("files")]
     fn files(&self, file_location: [u8; 46]) -> SingleValueMapper<File>;
 
-    // #[view(get_file_locations)]
     #[storage_mapper("file_locations")]
     fn file_locations(&self) -> UnorderedSetMapper<[u8; 46]>; //  Trainer X <- Qmdddd, Qmmaa
 
@@ -430,7 +459,6 @@ pub trait Trafficflchain {
     #[storage_mapper("file_authors")]
     fn file_authors(&self, file_location: [u8; 46]) -> SingleValueMapper<ManagedAddress>;
 
-    // #[view(get_round_files)]
     #[storage_mapper("round_files")]
     fn round_files(&self, round: usize) -> UnorderedSetMapper<[u8; 46]>;
 
@@ -459,6 +487,8 @@ pub trait Trafficflchain {
     fn stage(&self) -> SingleValueMapper<Stage>;
 
     // Events ----------------------------------------------------------------
+
+    // This method is used for testing purposes only, to simulate the occurrence of an event
     #[endpoint]
     fn test_event(&self, event_type: u8) {
         let test_user_addr = self.blockchain().get_caller().clone();

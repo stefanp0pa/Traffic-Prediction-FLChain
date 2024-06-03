@@ -200,21 +200,6 @@
             "outputs": []
         },
         {
-            "name": "get_all_round_files",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "round",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "List<File>"
-                }
-            ]
-        },
-        {
             "name": "get_all_clusters_per_node",
             "mutability": "readonly",
             "inputs": [
@@ -226,6 +211,36 @@
             "outputs": [
                 {
                     "type": "List<u16>"
+                }
+            ]
+        },
+        {
+            "name": "get_all_nodes_per_cluster",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<ClusterNode>"
+                }
+            ]
+        },
+        {
+            "name": "get_all_round_files",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<File>"
                 }
             ]
         },
@@ -294,7 +309,7 @@
             "outputs": []
         },
         {
-            "name": "get_aggregated_models",
+            "name": "get_cluster_models_for_aggregation",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -706,6 +721,19 @@
     "esdtAttributes": [],
     "hasCallback": false,
     "types": {
+        "ClusterNode": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "local_node_index",
+                    "type": "u16"
+                }
+            ]
+        },
         "Evaluation": {
             "type": "struct",
             "fields": [

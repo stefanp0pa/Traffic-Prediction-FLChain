@@ -14,7 +14,7 @@ try:
                 node_local_index = int(index)
                 print(f"Cluster {cluster_index}: with {node_global_index} and index {node_local_index}")
                 mutate_upload_cluster_description(cluster_index, node_global_index, node_local_index)
-                # mutate_clear_cluster_description(line_number, term)
+                # mutate_clear_cluster_description(cluster_index, node_global_index)
             # mutate_clear_dataset_file(line_content, line_number)
             # mutate_upload_dataset_file(line_content, line_number)
 except FileNotFoundError:

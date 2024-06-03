@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           39
+// Endpoints:                           40
 // Async Callback (empty):               1
-// Total number of exported functions:  41
+// Total number of exported functions:  42
 
 #![no_std]
 #![allow(internal_features)]
@@ -31,14 +31,15 @@ multiversx_sc_wasm_adapter::endpoints! {
         clear_adj_matrix_file => clear_adj_matrix_file
         upload_cluster_description => upload_cluster_description
         clear_cluster_description => clear_cluster_description
-        get_all_round_files => get_all_round_files
         get_all_clusters_per_node => get_all_clusters_per_node
+        get_all_nodes_per_cluster => get_all_nodes_per_cluster
+        get_all_round_files => get_all_round_files
         get_training_data => get_training_data
         evaluate_file => evaluate_file
         get_file_evaluations => get_file_evaluations
         signup_user => signup_user
         clear_user => clear_user
-        get_aggregated_models => get_aggregated_models
+        get_cluster_models_for_aggregation => get_cluster_models_for_aggregation
         get_users_by_role => get_users_by_role
         update_reputation => update_reputation
         next_round => next_round

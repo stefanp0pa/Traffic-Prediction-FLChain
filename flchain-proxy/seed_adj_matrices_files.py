@@ -8,9 +8,9 @@ def read_file_with_line_numbers(file_path):
         with open(file_path, 'r') as file:
             for line_number, line_content in enumerate(file, start=1):
                 line_content = line_content.strip()
-                print(f"Line {line_number}: {line_content}")
+                print(f"Seeding adj. matrix at {line_content} for cluster {line_number}")
                 mutate_upload_adj_matrix_file(line_content, line_number)
-                # mutate_clear_adj_matrix_file(line_content, line_number, 0)
+                # mutate_clear_adj_matrix_file(line_content, int(line_number))
     except FileNotFoundError:
         print(f"The file at {file_path} was not found.")
     except Exception as e:

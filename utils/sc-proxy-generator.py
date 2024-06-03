@@ -1,6 +1,6 @@
 import json
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
@@ -100,6 +100,8 @@ def choose_decode_method(param_type):
         return 'base64_string_to_ipfs_addresses'
     elif param_type == "array46<u8>":
         return 'base64_string_to_ipfs_address'
+    elif param_type == "List<ClusterNode>":
+        return 'base64_string_to_list_cluster_node'
     else:
         return 'base64_string_to_numeric'
 
