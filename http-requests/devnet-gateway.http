@@ -1,0 +1,22 @@
+POST https://devnet-api.multiversx.com/query HTTP/1.1
+Content-Type: application/json
+
+{
+  "scAddress": "erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r",
+  "funcName": "get_all_round_files",
+  "args": [0]
+}
+
+# 300 billion - 299997371730 = 262628270
+
+
+# Good question! The gas is expressed in gas units (not fee), thus the returned amount is indivisible.
+# However, there's an issue - the gasUsed seems not correctly computed by the SDK itself as of now, The API / Gateway returns a piece of data called gasRemaining.
+# For example:
+
+# gasUsed = GAS_PROVIDED_TO_VMQUERY - gasRemaining
+# gasUsed = 300000000000 - 299998909318 = 1090682
+
+# GAS_PROVIDED_TO_VMQUERY is a constant, equal to 300000000000. However, the constant has a wrong value in the SDKs (PY and JS).
+# We will patch that value (constant). However, in the meantime, if you have the possibility, you can perform the VM query
+# as a simple POST request towards the /query endpoint, then compute gasUsed = 300 billions - apiResponse.gasRemaining.

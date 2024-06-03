@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           37
+// Endpoints:                           39
 // Async Callback (empty):               1
-// Total number of exported functions:  39
+// Total number of exported functions:  41
 
 #![no_std]
 #![allow(internal_features)]
@@ -44,6 +44,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         next_round => next_round
         set_round => set_round
         set_stage => set_stage
+        get_node_dataset => node_datasets
         get_cluster_adjacency_matrix => cluster_adj_matrices
         get_cluster_aggregation => cluster_aggregation
         get_user => users
@@ -57,6 +58,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         get_clusters_count => clusters_count
         get_round => round
         get_stage => stage
+        test_event => test_event
     )
 }
 

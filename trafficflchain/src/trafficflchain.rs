@@ -16,7 +16,7 @@ use stage::Stage;
 // Former SC: erd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s
 // Former Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
 
-// New SC: erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r
+// New SC: erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v
 // New Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
 
 // New SC: erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r
@@ -174,7 +174,7 @@ pub trait Trafficflchain {
 
 
 
-    
+
     #[endpoint]
     fn upload_cluster_description(&self, cluster_index: u16, global_node_index: u16, local_node_index: u16) {
         let cluster_node = ClusterNode {
@@ -359,6 +359,7 @@ pub trait Trafficflchain {
     // Storage mappers -------------------------------------------------------
 
     // the IPFS address of the dataset for each node
+    #[view(get_node_dataset)]
     #[storage_mapper("node_datasets")]
     fn node_datasets(&self, node_index: u16) -> SingleValueMapper<[u8; 46]>;
 
@@ -446,15 +447,46 @@ pub trait Trafficflchain {
     fn stage(&self) -> SingleValueMapper<Stage>;
 
     // Events ----------------------------------------------------------------
-    #[event("network_setup_event")]
-    fn network_setup_event(
-        &self,
-        #[indexed] city_id: u64);
+    #[endpoint]
+    fn test_event(&self, event_type: u8) {
+        let test_user_addr = self.blockchain().get_caller().clone();
+        let test_stake= BigUint::from(567u32);
+        let test_role = Role::Trainer;
+        let test_stage = Stage::Evaluation;
+        let test_file_type = FileType::ClusterAggregationModel;
+        let test_round = 89;
+        let test_reputation = 656;
+        let test_evaluation_status = EvaluationStatus::Positive;
+        let test_file_location: [u8; 46] = "QmUPW6vbfbTW7LGDMy6QrzxLRHMkUBAdVAfTCQKUuQj999".as_bytes().try_into().unwrap();
 
-    #[event("network_cleared_event")]
-    fn network_cleared_event(
-        &self,
-        #[indexed] city_id: u64);
+        if event_type == 1 {
+            self.signup_user_event(test_user_addr, test_stake, test_role);
+        }
+        else if event_type == 2 {
+            self.user_cleared_event(test_user_addr);
+        }
+        else if event_type == 3 {
+            self.reputation_updated_event(test_user_addr, test_reputation);
+        }
+        else if event_type == 4 {
+            self.set_round_event(test_round);
+        }
+        else if event_type == 5 {
+            self.set_stage_event(test_stage);
+        }
+        else if event_type == 6 {
+            self.upload_file_event(test_file_location, test_file_type, test_round, test_user_addr);
+        }
+        else if event_type == 7 {
+            self.clear_file_event(test_file_location, test_file_type, test_round, test_user_addr);
+        }
+        else if event_type == 8 {
+            self.evaluate_file_event(test_file_location, test_evaluation_status, test_user_addr);
+        }
+        else {
+            sc_panic!("Do not know what event to publish!");
+        }
+    }
     
     #[event("signup_user_event")]
     fn signup_user_event(
@@ -467,12 +499,7 @@ pub trait Trafficflchain {
     fn user_cleared_event(
         &self,
         #[indexed] user_addr: ManagedAddress);
-    
-    #[event("reputation_updated_event")]
-    fn reputation_updated_event(
-        &self,
-        #[indexed] user_addr: ManagedAddress,
-        #[indexed] new_reputation: usize);
+
 
     #[event("set_round_event")]
     fn set_round_event(
@@ -506,4 +533,10 @@ pub trait Trafficflchain {
         #[indexed] file_location: [u8; 46],
         #[indexed] status: EvaluationStatus,
         #[indexed] evaluator: ManagedAddress);
+    
+    #[event("reputation_updated_event")]
+    fn reputation_updated_event(
+        &self,
+        #[indexed] user_addr: ManagedAddress,
+        #[indexed] new_reputation: usize);
 }

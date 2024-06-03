@@ -371,6 +371,21 @@
             "outputs": []
         },
         {
+            "name": "get_node_dataset",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "node_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "array46<u8>"
+                }
+            ]
+        },
+        {
             "name": "get_cluster_adjacency_matrix",
             "mutability": "readonly",
             "inputs": [
@@ -538,29 +553,20 @@
                     "type": "Stage"
                 }
             ]
+        },
+        {
+            "name": "test_event",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "event_type",
+                    "type": "u8"
+                }
+            ],
+            "outputs": []
         }
     ],
     "events": [
-        {
-            "identifier": "network_setup_event",
-            "inputs": [
-                {
-                    "name": "city_id",
-                    "type": "u64",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "network_cleared_event",
-            "inputs": [
-                {
-                    "name": "city_id",
-                    "type": "u64",
-                    "indexed": true
-                }
-            ]
-        },
         {
             "identifier": "signup_user_event",
             "inputs": [
@@ -587,21 +593,6 @@
                 {
                     "name": "user_addr",
                     "type": "Address",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "reputation_updated_event",
-            "inputs": [
-                {
-                    "name": "user_addr",
-                    "type": "Address",
-                    "indexed": true
-                },
-                {
-                    "name": "new_reputation",
-                    "type": "u32",
                     "indexed": true
                 }
             ]
@@ -692,6 +683,21 @@
                 {
                     "name": "evaluator",
                     "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "identifier": "reputation_updated_event",
+            "inputs": [
+                {
+                    "name": "user_addr",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "new_reputation",
+                    "type": "u32",
                     "indexed": true
                 }
             ]
