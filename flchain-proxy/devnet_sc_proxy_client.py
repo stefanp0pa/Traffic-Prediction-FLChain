@@ -199,7 +199,7 @@ CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
 CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
-WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem"
+WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
 GAS_LIMIT = 60000000
 
 transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)

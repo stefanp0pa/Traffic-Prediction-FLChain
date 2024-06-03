@@ -5,10 +5,10 @@ CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
 GAS_LIMIT = 60000000
-ABI_SOURCE  = "/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
-CLIENT_DEST = f"/Users/stefan/Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py"
+ABI_SOURCE  = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
+CLIENT_DEST = f"/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py"
 CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
-WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem"
+WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
 
 ENDPOINTS_SECTION = "endpoints"
 TYPES_SECTION = "types"
@@ -60,7 +60,7 @@ def insert_constants(file_handler):
     # self.nonce_holder = AccountNonceHolder(self.network_provider.get_account(self.user_addr).nonce)
 
 
-def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
+def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
     try:
         with open(file_path, 'r') as file:
             data = file.read()

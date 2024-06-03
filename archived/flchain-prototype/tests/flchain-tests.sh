@@ -5,7 +5,7 @@ command -v jq || { echo "jq not found. Installing jq using Homebrew..."; brew in
 
 CONTRACT_ADDR="erd1qqqqqqqqqqqqqpgq5fqj294099nurngdz9rzgv7du0n6h4vedttshsdl08"
 
-source "/Users/stefan/ssi-proiect/contracts/flchain_dummy/commands/devnet.snippets.sh"
+source "/home/robert/Desktop/Facultate/Licenta//ssi-proiect/contracts/flchain_dummy/commands/devnet.snippets.sh"
 
 set_contract ${CONTRACT_ADDR}
 

@@ -3,7 +3,7 @@ PROXY="https://devnet-gateway.multiversx.com"
 TESTNET_PROXY="https://testnet-api.multiversx.com"
 CHAIN_ID="D"
 TESTNET_CHAIN_ID="T"
-WALLET_PEM="/Users/stefan/ssi-proiect/contracts/wallets/wallet2.pem"
+WALLET_PEM="/home/robert/Desktop/Facultate/Licenta//ssi-proiect/contracts/wallets/wallet2.pem"
 
 ISSUANCE_SC="erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u"
 ISSUANCE_FEE=50000000000000000 # 0.05 EGLD
