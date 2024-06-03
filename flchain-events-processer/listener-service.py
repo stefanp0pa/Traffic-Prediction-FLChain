@@ -61,6 +61,14 @@ try:
         except Exception as e:
             print(" [x] Could not retrieve user_cleared event with exception %s!" % e)
             # ch.basic_ack(delivery_tag=method.delivery_tag)
+    
+    def test_callback(ch, method, properties, body):
+        try:
+            payload = json.loads(body.decode())
+            print(f" [*] Received user_cleared event with payload: {payload}!")
+            # ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception as e:
+            print(" [x] Could not retrieve user_cleared event with exception %s!" % e)
         
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
     channel = connection.channel()
@@ -72,6 +80,7 @@ try:
         f"{WORKER_NAME}-data_batch_published_event",
         f"{WORKER_NAME}-signup_user_event",
         f"{WORKER_NAME}-user_cleared_event",
+        f"{WORKER_NAME}-set_stage_eevent",
     ]
     
     channel.queue_declare(queue=queue_names[0], exclusive=True)
@@ -79,6 +88,7 @@ try:
     channel.queue_declare(queue=queue_names[2], exclusive=True)
     channel.queue_declare(queue=queue_names[3], exclusive=True)
     channel.queue_declare(queue=queue_names[4], exclusive=True)
+    channel.queue_declare(queue=queue_names[5], exclusive=True)
     
     channel.queue_bind(
         exchange="flchain-events-exchange", 
@@ -100,6 +110,10 @@ try:
         exchange="flchain-events-exchange", 
         queue=queue_names[4],
         routing_key="user_cleared_event")
+    channel.queue_bind(
+        exchange="flchain-events-exchange", 
+        queue=queue_names[5],
+        routing_key="set_stage_event")
     
     channel.basic_consume(
         queue=queue_names[0],
@@ -124,6 +138,11 @@ try:
     channel.basic_consume(
         queue=queue_names[4],
         on_message_callback=user_cleared_published_callback,
+        auto_ack=True,
+    )
+    channel.basic_consume(
+        queue=queue_names[5],
+        on_message_callback=test_callback,
         auto_ack=True,
     )
     

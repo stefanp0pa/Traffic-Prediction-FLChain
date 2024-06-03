@@ -61,7 +61,7 @@ class BlockchainApi(BlockchainBaseApi):
 
 @app.route('/get-serialized-graph')
 def get_serialized_graph():
-    blApi = BlockchainApi(SC_ADDR, "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz", WALLET_PATH, CHAIN_ID, NETWORK_PROVIDER, GAS_LIMIT)
+    blApi = BlockchainApi(SC_ADDR, "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu", WALLET_PATH, CHAIN_ID, NETWORK_PROVIDER, GAS_LIMIT)
     graph_id = 1
     serialized_graph = blApi.get_serialized_graph(graph_id)
     return serialized_graph

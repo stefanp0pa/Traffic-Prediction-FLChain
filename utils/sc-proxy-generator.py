@@ -1,4 +1,9 @@
 import json
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--dest', type=str, required=True, help='CLIENT DESTINATION')
+args = parser.parse_args()
 
 SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 CHAIN_ID = "D"
@@ -6,8 +11,9 @@ NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
 GAS_LIMIT = 60000000
 ABI_SOURCE  = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
-CLIENT_DEST = f"/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py"
-CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
+CLIENT_DEST = args.dest
+# CLIENT_DEST = f"/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py" # TODO
+CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
 WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
 
 ENDPOINTS_SECTION = "endpoints"

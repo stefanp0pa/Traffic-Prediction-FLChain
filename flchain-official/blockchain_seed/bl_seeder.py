@@ -10,8 +10,7 @@ def create_cluster():
     check_and_create_directory(cluster_dir)
     for index_cluster, leader in enumerate(leaders):
         cluster_nodes = [node for node in graph if leader in graph[node]['leaders']]
-        nodes = [(node, index + 1) for index, node in enumerate (cluster_nodes)]
-        clusters.append(nodes)
+        clusters.append(cluster_nodes)
         # cluster_path = f"{cluster_dir}/{index_cluster + 1}"
         # write_hash(cluster_nodes, cluster_path)
         # clusters.append(upload_file(cluster_path))
