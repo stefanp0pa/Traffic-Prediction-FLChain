@@ -94,6 +94,21 @@ def hex_string_to_file(hex_string):
     }
     return decoded_response
 
+def hex_string_to_training_data(hex_string):
+    if not hex_string:
+        return 0
+    cluster_adj_matrix_addr = hex_string[:92] # 46 bytes x 2 = 92 chars for cluster adjacency matrix address
+    dataset_addr = hex_string[92:184] # 46 bytes x 2 = 92 chars for dataset address
+    aggr_cluser_model_addr = hex_string[184:276] # 46 bytes x 2 = 92 chars for aggregated cluster model address
+    local_node_index = hex_string[276:278] # 2 bytes x 1 = 2 chars for local node index
+    decoded_response = {
+        'cluster_adj_matrix_addr': hex_string_to_string(cluster_adj_matrix_addr),
+        'dataset_addr': hex_string_to_string(dataset_addr),
+        'aggr_cluser_model_addr': hex_string_to_string(aggr_cluser_model_addr),
+        'local_node_index': hex_string_to_numeric(local_node_index)
+    }
+    return decoded_response
+
 def base64_string_to_file_array(encoded_string):
     if not encoded_string:
         return []
@@ -126,6 +141,13 @@ def base64_string_to_ipfs_addresses(encoded_string):
     for i in range(0, len(decoded_bytes), ipfs_cdv1_addr_size):
         ipfs_addresses.append(hex_string_to_string(decoded_bytes[i:i + ipfs_cdv1_addr_size]))
     return ipfs_addresses
+
+def base64_string_to_training_data(encoded_string):
+    if not encoded_string:
+        return 0
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    decoded_response = hex_string_to_training_data(decoded_bytes)
+    return decoded_response
 
 def read_network_setup_event(payload):
 	event_name = base64_string_to_string(payload[0])

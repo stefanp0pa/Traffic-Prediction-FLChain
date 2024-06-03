@@ -1,6 +1,6 @@
 import json
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
@@ -88,6 +88,8 @@ def choose_decode_method(param_type):
         return 'base64_string_to_file_array'
     elif param_type == "File":
         return 'base64_string_to_file'
+    elif param_type == "TrainingData":
+        return 'base64_string_to_training_data'
     elif param_type == "bytes":
         return 'base64_string_to_bytes'
     elif param_type == "GraphTopology":

@@ -50,16 +50,22 @@ def choose_decode_method(param_type):
         return 'base64_string_to_numeric'
     elif param_type == 'Address':
         return 'base64_string_to_bech32_address'
+    elif param_type == 'List<Address>':
+        return 'base64_string_to_array_of_bech32_addresses'
     elif param_type == "List<byte>" or param_type == "List<u8>":
         return 'base64_string_to_bytes'
     elif param_type == "List<File>":
         return 'base64_string_to_file_array'
     elif param_type == "File":
         return 'base64_string_to_file'
+    elif param_type == "TrainingData":
+        return 'base64_string_to_training_data'
     elif param_type == "bytes":
         return 'base64_string_to_bytes'
     elif param_type == "GraphTopology":
         return 'base64_string_to_graphTopology'
+    elif param_type == "variadic<array46<u8>>":
+        return 'base64_string_to_ipfs_addresses'
     else:
         return 'base64_string_to_numeric'
 

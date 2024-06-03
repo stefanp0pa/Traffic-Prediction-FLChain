@@ -18,7 +18,16 @@
     },
     "name": "Trafficflchain",
     "constructor": {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "nodes_count",
+                "type": "u16"
+            },
+            {
+                "name": "clusters_count",
+                "type": "u16"
+            }
+        ],
         "outputs": []
     },
     "endpoints": [
@@ -29,45 +38,7 @@
             "outputs": []
         },
         {
-            "name": "setup_network",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "city_id",
-                    "type": "u64"
-                },
-                {
-                    "name": "vertices_count",
-                    "type": "u64"
-                },
-                {
-                    "name": "edges_count",
-                    "type": "u64"
-                },
-                {
-                    "name": "storage_addr",
-                    "type": "array46<u8>"
-                },
-                {
-                    "name": "hash",
-                    "type": "array32<u8>"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "clear_network",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "city_id",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "upload_file",
+            "name": "upload_dataset_file",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -75,8 +46,83 @@
                     "type": "array46<u8>"
                 },
                 {
-                    "name": "file_type",
-                    "type": "FileType"
+                    "name": "node_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "upload_cluster_model_file",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "upload_cluster_aggregation",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "upload_adj_matrix_file",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "clear_dataset_file",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "node_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "clear_cluster_aggregation",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
                 },
                 {
                     "name": "round",
@@ -86,15 +132,121 @@
             "outputs": []
         },
         {
-            "name": "clear_file",
+            "name": "clear_cluster_model_file",
             "mutability": "mutable",
             "inputs": [
                 {
                     "name": "file_location",
                     "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "round",
+                    "type": "u32"
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "clear_adj_matrix_file",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "upload_cluster_description",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "local_node_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "clear_cluster_description",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "get_all_round_files",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<File>"
+                }
+            ]
+        },
+        {
+            "name": "get_all_clusters_per_node",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "node_global_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<u16>"
+                }
+            ]
+        },
+        {
+            "name": "get_training_data",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "TrainingData"
+                }
+            ]
         },
         {
             "name": "evaluate_file",
@@ -127,21 +279,6 @@
             ]
         },
         {
-            "name": "get_all_round_files",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "round",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "List<File>"
-                }
-            ]
-        },
-        {
             "name": "signup_user",
             "mutability": "mutable",
             "payableInTokens": [
@@ -155,6 +292,25 @@
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
+        },
+        {
+            "name": "get_aggregated_models",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "round_index",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<array46<u8>>"
+                }
+            ]
         },
         {
             "name": "get_users_by_role",
@@ -215,17 +371,36 @@
             "outputs": []
         },
         {
-            "name": "get_graph_network",
+            "name": "get_cluster_adjacency_matrix",
             "mutability": "readonly",
             "inputs": [
                 {
-                    "name": "city_id",
-                    "type": "u64"
+                    "name": "cluster_index",
+                    "type": "u16"
                 }
             ],
             "outputs": [
                 {
-                    "type": "GraphTopology"
+                    "type": "array46<u8>"
+                }
+            ]
+        },
+        {
+            "name": "get_cluster_aggregation",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "array46<u8>"
                 }
             ]
         },
@@ -245,17 +420,6 @@
             ]
         },
         {
-            "name": "get_user_addresses",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
             "name": "get_file",
             "mutability": "readonly",
             "inputs": [
@@ -267,17 +431,6 @@
             "outputs": [
                 {
                     "type": "File"
-                }
-            ]
-        },
-        {
-            "name": "get_file_locations",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<array46<u8>>",
-                    "multi_result": true
                 }
             ]
         },
@@ -347,12 +500,22 @@
             ]
         },
         {
-            "name": "get_graphs_count",
+            "name": "get_nodes_count",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "u32"
+                    "type": "u16"
+                }
+            ]
+        },
+        {
+            "name": "get_clusters_count",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u16"
                 }
             ]
         },
@@ -592,49 +755,20 @@
                     "discriminant": 0
                 },
                 {
-                    "name": "SensitiveDataBatch",
+                    "name": "Dataset",
                     "discriminant": 1
                 },
                 {
-                    "name": "PublicDataBatch",
+                    "name": "ClusterModel",
                     "discriminant": 2
                 },
                 {
-                    "name": "Model",
+                    "name": "ClusterStructure",
                     "discriminant": 3
                 },
                 {
-                    "name": "AggregationResult",
+                    "name": "ClusterAggregationModel",
                     "discriminant": 4
-                }
-            ]
-        },
-        "GraphTopology": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "vertices_count",
-                    "type": "u64"
-                },
-                {
-                    "name": "edges_count",
-                    "type": "u64"
-                },
-                {
-                    "name": "owner",
-                    "type": "Address"
-                },
-                {
-                    "name": "storage_addr",
-                    "type": "array46<u8>"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "u64"
-                },
-                {
-                    "name": "hash",
-                    "type": "array32<u8>"
                 }
             ]
         },
@@ -705,6 +839,27 @@
                 {
                     "name": "Finalization",
                     "discriminant": 7
+                }
+            ]
+        },
+        "TrainingData": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "cluster_adj_matrix_addr",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "dataset_addr",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "aggr_cluster_model",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "local_node_index",
+                    "type": "u16"
                 }
             ]
         },

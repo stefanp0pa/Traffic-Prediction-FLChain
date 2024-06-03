@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           28
+// Endpoints:                           37
 // Async Callback (empty):               1
-// Total number of exported functions:  30
+// Total number of exported functions:  39
 
 #![no_std]
 #![allow(internal_features)]
@@ -21,31 +21,40 @@ multiversx_sc_wasm_adapter::endpoints! {
     (
         init => init
         upgrade => upgrade
-        setup_network => setup_network
-        clear_network => clear_network
-        upload_file => upload_file
-        clear_file => clear_file
+        upload_dataset_file => upload_dataset_file
+        upload_cluster_model_file => upload_cluster_model_file
+        upload_cluster_aggregation => upload_cluster_aggregation
+        upload_adj_matrix_file => upload_adj_matrix_file
+        clear_dataset_file => clear_dataset_file
+        clear_cluster_aggregation => clear_cluster_aggregation
+        clear_cluster_model_file => clear_cluster_model_file
+        clear_adj_matrix_file => clear_adj_matrix_file
+        upload_cluster_description => upload_cluster_description
+        clear_cluster_description => clear_cluster_description
+        get_all_round_files => get_all_round_files
+        get_all_clusters_per_node => get_all_clusters_per_node
+        get_training_data => get_training_data
         evaluate_file => evaluate_file
         get_file_evaluations => get_file_evaluations
-        get_all_round_files => get_all_round_files
         signup_user => signup_user
         clear_user => clear_user
+        get_aggregated_models => get_aggregated_models
         get_users_by_role => get_users_by_role
         update_reputation => update_reputation
         next_round => next_round
         set_round => set_round
         set_stage => set_stage
-        get_graph_network => graph_networks
+        get_cluster_adjacency_matrix => cluster_adj_matrices
+        get_cluster_aggregation => cluster_aggregation
         get_user => users
-        get_user_addresses => user_addresses
         get_file => files
-        get_file_locations => file_locations
         get_stake => stakes
         get_reputation => reputations
         get_file_author => file_authors
         get_files_count => files_count
         get_users_count => users_count
-        get_graphs_count => graphs_count
+        get_nodes_count => nodes_count
+        get_clusters_count => clusters_count
         get_round => round
         get_stage => stage
     )

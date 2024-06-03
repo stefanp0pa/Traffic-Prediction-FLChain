@@ -7,7 +7,7 @@ WALLETS_DIR="wallets"
 MASTER_WALLET="$PROJECT_PATH/wallets/master.pem"
 DWARF_WALLET="$PROJECT_PATH/wallets/dwarf.pem"
 
-SC_ADDR="erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v"
+SC_ADDR="erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r"
 
 BYTECODE="$PROJECT_PATH/trafficflchain/output/trafficflchain.wasm"
 
@@ -27,6 +27,7 @@ deploy_contract() {
         --gas-limit=${GAS_LIMIT} \
         --metadata-payable \
         --proxy=${PROXY} --chain=${CHAIN_ID} \
+        --arguments 0xaa 0x16 \
         --outfile="deploy-devnet.interaction.json" --send || return
 
     TRANSACTION=$(mxpy data parse --file="deploy-devnet.interaction.json" --expression="data['emittedTransactionHash']")
@@ -44,6 +45,7 @@ upgrade_contract() {
         --bytecode=${BYTECODE} \
         --pem=${MASTER_WALLET} \
         --gas-limit=${GAS_LIMIT} \
+        --metadata-payable \
         --proxy=${PROXY} --chain=${CHAIN_ID} \
         --send || return
 }
