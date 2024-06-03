@@ -136,12 +136,21 @@ def base64_string_to_file(encoded_string):
     return decoded_response
 
 def base64_string_to_ipfs_addresses(encoded_string):
+    if not encoded_string:
+        return []
     decoded_bytes = base64_string_to_hex_string(encoded_string)
     ipfs_addresses = []
     ipfs_cdv1_addr_size = 46 * 2
     for i in range(0, len(decoded_bytes), ipfs_cdv1_addr_size):
         ipfs_addresses.append(hex_string_to_string(decoded_bytes[i:i + ipfs_cdv1_addr_size]))
     return ipfs_addresses
+
+def base64_string_to_ipfs_address(encoded_string):
+    if not encoded_string:
+        return 0
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    decoded_response = hex_string_to_string(decoded_bytes)
+    return decoded_response
 
 def base64_string_to_training_data(encoded_string):
     if not encoded_string:
@@ -150,6 +159,16 @@ def base64_string_to_training_data(encoded_string):
     decoded_response = hex_string_to_training_data(decoded_bytes)
     return decoded_response
 
+def base64_string_to_list_u16(encoded_string):
+    if not encoded_string:
+        return []
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    u16_numbers = []
+    u16_part_size = 4
+    for i in range(0, len(decoded_bytes), u16_part_size):
+        decoded_response = hex_string_to_numeric(decoded_bytes[i:i + u16_part_size])    
+        u16_numbers.append(decoded_response)
+    return u16_numbers
 
 def read_signup_user_event(payload):
 	event_name = base64_string_to_string(payload[0])

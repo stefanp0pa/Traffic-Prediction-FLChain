@@ -133,7 +133,7 @@ pub trait Trafficflchain {
     }
 
     #[endpoint]
-    fn upload_cluster_aggregation(&self, file_location: [u8; 46], cluster_index: u16) {
+    fn upload_cluster_aggregation_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
         self.upload_file(file_location, FileType::ClusterAggregationModel, author_addr);
@@ -154,7 +154,7 @@ pub trait Trafficflchain {
     }
 
     #[endpoint]
-    fn clear_cluster_aggregation(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
+    fn clear_cluster_aggregation_file(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
         self.clear_file(file_location);
         self.cluster_aggregation(cluster_index, round).clear();
     }
@@ -215,11 +215,23 @@ pub trait Trafficflchain {
     #[view]
     fn get_training_data(&self, node_index: u16, cluster_index: u16) -> TrainingData {
         let adj_matrix = self.cluster_adj_matrices(cluster_index).get();
+        if self.cluster_adj_matrices(cluster_index).is_empty() {
+            sc_panic!("Cluster adjacency matrix does not exist!");
+        }
         let data_addr = self.node_datasets(node_index).get();
+        if self.node_datasets(node_index).is_empty() {
+            sc_panic!("Dataset does not exist!");
+        }
         let prev_round = self.round().get() - 1;
         let prev_aggr_model = self.cluster_aggregation(cluster_index, prev_round).get();
-        let local_node_index = self.cluster_nodes(node_index)
+        if self.cluster_aggregation(cluster_index, prev_round).is_empty() {
+            sc_panic!("No previous aggregated model to use!");
+        }
+        let local_node_index = self.cluster_nodes(cluster_index)
             .iter().find(|cn| cn.global_node_index == node_index).unwrap().local_node_index;
+        if self.cluster_nodes(node_index).is_empty() {
+            sc_panic!("Node does not belong to any cluster!");
+        }
 
         TrainingData {
             cluster_adj_matrix_addr: adj_matrix,
@@ -452,7 +464,7 @@ pub trait Trafficflchain {
         let test_user_addr = self.blockchain().get_caller().clone();
         let test_stake= BigUint::from(567u32);
         let test_role = Role::Trainer;
-        let test_stage = Stage::Evaluation;
+        let test_stage = Stage::ModelTraining;
         let test_file_type = FileType::ClusterAggregationModel;
         let test_round = 89;
         let test_reputation = 656;

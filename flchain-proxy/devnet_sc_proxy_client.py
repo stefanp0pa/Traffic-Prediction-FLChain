@@ -136,12 +136,21 @@ def base64_string_to_file(encoded_string):
     return decoded_response
 
 def base64_string_to_ipfs_addresses(encoded_string):
+    if not encoded_string:
+        return []
     decoded_bytes = base64_string_to_hex_string(encoded_string)
     ipfs_addresses = []
     ipfs_cdv1_addr_size = 46 * 2
     for i in range(0, len(decoded_bytes), ipfs_cdv1_addr_size):
         ipfs_addresses.append(hex_string_to_string(decoded_bytes[i:i + ipfs_cdv1_addr_size]))
     return ipfs_addresses
+
+def base64_string_to_ipfs_address(encoded_string):
+    if not encoded_string:
+        return 0
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    decoded_response = hex_string_to_string(decoded_bytes)
+    return decoded_response
 
 def base64_string_to_training_data(encoded_string):
     if not encoded_string:
@@ -150,6 +159,16 @@ def base64_string_to_training_data(encoded_string):
     decoded_response = hex_string_to_training_data(decoded_bytes)
     return decoded_response
 
+def base64_string_to_list_u16(encoded_string):
+    if not encoded_string:
+        return []
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    u16_numbers = []
+    u16_part_size = 4
+    for i in range(0, len(decoded_bytes), u16_part_size):
+        decoded_response = hex_string_to_numeric(decoded_bytes[i:i + u16_part_size])    
+        u16_numbers.append(decoded_response)
+    return u16_numbers
 
 from pathlib import Path
 from multiversx_sdk import TokenComputer
@@ -220,7 +239,7 @@ def query_get_all_clusters_per_node(node_global_index, caller_user_addr = CALLER
 	return_data = response['returnData']
 	output_type = 'List<u16>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_numeric
+	decode_method = base64_string_to_list_u16
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
@@ -286,7 +305,7 @@ def query_get_aggregated_models(cluster_index, round_index, caller_user_addr = C
 	return_data = response['returnData']
 	output_type = 'List<array46<u8>>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_numeric
+	decode_method = base64_string_to_ipfs_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
@@ -330,7 +349,7 @@ def query_get_node_dataset(node_index, caller_user_addr = CALLER_USER_ADDR):
 	return_data = response['returnData']
 	output_type = 'array46<u8>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_numeric
+	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
@@ -352,7 +371,7 @@ def query_get_cluster_adjacency_matrix(cluster_index, caller_user_addr = CALLER_
 	return_data = response['returnData']
 	output_type = 'array46<u8>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_numeric
+	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
@@ -374,7 +393,7 @@ def query_get_cluster_aggregation(cluster_index, round, caller_user_addr = CALLE
 	return_data = response['returnData']
 	output_type = 'array46<u8>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_numeric
+	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
@@ -670,7 +689,7 @@ def mutate_upload_cluster_model_file(file_location, cluster_index, wallet_path =
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_cluster_aggregation(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_cluster_aggregation_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -681,7 +700,7 @@ def mutate_upload_cluster_aggregation(file_location, cluster_index, wallet_path 
 	call_transaction = sc_factory.create_transaction_for_execute(
 		sender=user_addr,
 		contract=contract_address,
-		function="upload_cluster_aggregation",
+		function="upload_cluster_aggregation_file",
 		gas_limit=60000000,
 		arguments=[file_location, cluster_index]
 	)
@@ -691,7 +710,7 @@ def mutate_upload_cluster_aggregation(file_location, cluster_index, wallet_path 
 	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
 	call_transaction.nonce = curr_nonce
 	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
-	print(f'>>>Performing mutable call to upload_cluster_aggregation...')
+	print(f'>>>Performing mutable call to upload_cluster_aggregation_file...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
@@ -745,7 +764,7 @@ def mutate_clear_dataset_file(file_location, node_index, wallet_path = WALLET_PA
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_cluster_aggregation(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_cluster_aggregation_file(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -757,7 +776,7 @@ def mutate_clear_cluster_aggregation(file_location, cluster_index, round, wallet
 	call_transaction = sc_factory.create_transaction_for_execute(
 		sender=user_addr,
 		contract=contract_address,
-		function="clear_cluster_aggregation",
+		function="clear_cluster_aggregation_file",
 		gas_limit=60000000,
 		arguments=[file_location, cluster_index, round]
 	)
@@ -767,7 +786,7 @@ def mutate_clear_cluster_aggregation(file_location, cluster_index, round, wallet
 	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
 	call_transaction.nonce = curr_nonce
 	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
-	print(f'>>>Performing mutable call to clear_cluster_aggregation...')
+	print(f'>>>Performing mutable call to clear_cluster_aggregation_file...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
@@ -1059,4 +1078,4 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-mutate_test_event(3)
+query_get_training_data(11, 1)

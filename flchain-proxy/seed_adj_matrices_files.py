@@ -1,7 +1,7 @@
 from devnet_sc_proxy_client import mutate_upload_adj_matrix_file
 from devnet_sc_proxy_client import mutate_clear_adj_matrix_file
 
-DATASET_FILE_PATH = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/adj_clusters_hash.txt'
+DATASET_FILE_PATH = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/adj_matrices_ipfs_addr.txt'
 
 def read_file_with_line_numbers(file_path):
     try:

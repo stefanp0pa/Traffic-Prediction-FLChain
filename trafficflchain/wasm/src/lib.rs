@@ -23,10 +23,10 @@ multiversx_sc_wasm_adapter::endpoints! {
         upgrade => upgrade
         upload_dataset_file => upload_dataset_file
         upload_cluster_model_file => upload_cluster_model_file
-        upload_cluster_aggregation => upload_cluster_aggregation
+        upload_cluster_aggregation_file => upload_cluster_aggregation_file
         upload_adj_matrix_file => upload_adj_matrix_file
         clear_dataset_file => clear_dataset_file
-        clear_cluster_aggregation => clear_cluster_aggregation
+        clear_cluster_aggregation_file => clear_cluster_aggregation_file
         clear_cluster_model_file => clear_cluster_model_file
         clear_adj_matrix_file => clear_adj_matrix_file
         upload_cluster_description => upload_cluster_description
