@@ -48,6 +48,10 @@
                 {
                     "name": "global_node_index",
                     "type": "u16"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
                 }
             ],
             "outputs": []
@@ -126,6 +130,10 @@
                 },
                 {
                     "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "cluster_index",
                     "type": "u16"
                 }
             ],
@@ -433,6 +441,10 @@
             "inputs": [
                 {
                     "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "cluster_index",
                     "type": "u16"
                 }
             ],

@@ -194,7 +194,7 @@ from multiversx_sdk import ContractQueryBuilder
 from multiversx_sdk import ApiNetworkProvider
 from multiversx_sdk import AccountNonceHolder
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqsav8rd0pkf96yzmgvz3htkugwt2x54ntch8qsx5q3e"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
@@ -367,11 +367,11 @@ def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
-def query_get_node_dataset(global_node_index, caller_user_addr = CALLER_USER_ADDR):
+def query_get_node_dataset(global_node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
 		function = "get_node_dataset",
-		call_arguments = [global_node_index],
+		call_arguments = [global_node_index, cluster_index],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
@@ -719,10 +719,11 @@ def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
-def mutate_upload_dataset_file(file_location, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
+		cluster_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
@@ -732,7 +733,7 @@ def mutate_upload_dataset_file(file_location, global_node_index, wallet_path = W
 		contract=contract_address,
 		function="upload_dataset_file",
 		gas_limit=60000000,
-		arguments=[file_location, global_node_index]
+		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -845,10 +846,11 @@ def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WA
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_dataset_file(file_location, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
+		cluster_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
@@ -858,7 +860,7 @@ def mutate_clear_dataset_file(file_location, global_node_index, wallet_path = WA
 		contract=contract_address,
 		function="clear_dataset_file",
 		gas_limit=60000000,
-		arguments=[file_location, global_node_index]
+		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -1211,9 +1213,3 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-# query_get_round()
-# query_get_all_round_files(0)
-# query_get_files_count()
-# mutate_set_round(1)
-# query_get_training_data(158, 1)
-query_get_all_clusters_per_node(158)

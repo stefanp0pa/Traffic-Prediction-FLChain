@@ -1,6 +1,6 @@
 import json
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqsav8rd0pkf96yzmgvz3htkugwt2x54ntch8qsx5q3e"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"

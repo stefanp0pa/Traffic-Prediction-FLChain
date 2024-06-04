@@ -112,10 +112,10 @@ pub trait Trafficflchain {
 
     // The dataset file for each node, we only store the IPFS address and it is the consumer's responsibility to fetch it
     #[endpoint]
-    fn upload_dataset_file(&self, file_location: [u8; 46], global_node_index: u16) {
+    fn upload_dataset_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
         self.upload_file(file_location, FileType::Dataset, author_addr);
-        self.node_datasets(global_node_index).set(file_location.clone());
+        self.node_datasets(global_node_index, cluster_index).set(file_location.clone());
     }
 
     // This method should be used in-between the Training and Aggregation stages
@@ -157,9 +157,9 @@ pub trait Trafficflchain {
     }
 
     #[endpoint]
-    fn clear_dataset_file(&self, file_location: [u8; 46], global_node_index: u16) {
+    fn clear_dataset_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
         self.clear_file(file_location);
-        self.node_datasets(global_node_index).clear();
+        self.node_datasets(global_node_index, cluster_index).clear();
     }
 
     #[endpoint]
@@ -249,7 +249,7 @@ pub trait Trafficflchain {
     // Gets the necessary data that a trainer requires to train a model
     // Given a node X and a cluster Y as parameters, we want to know the following:
     // - The adjacency matrix of the cluster Y
-    // - The dataset of the node X
+    // - The dataset of the node X and cluster Y
     // - The aggregated model of the cluster Y from the previous round (this is the baseline model for the new round)
     // - The local index of the node X in the cluster Y
     #[view]
@@ -258,8 +258,8 @@ pub trait Trafficflchain {
         if self.cluster_adj_matrices(cluster_index).is_empty() {
             sc_panic!("Cluster adjacency matrix does not exist!");
         }
-        let data_addr = self.node_datasets(global_node_index).get();
-        if self.node_datasets(global_node_index).is_empty() {
+        let data_addr = self.node_datasets(global_node_index, cluster_index).get();
+        if self.node_datasets(global_node_index, cluster_index).is_empty() {
             sc_panic!("Dataset does not exist!");
         }
         let prev_round = self.round().get() - 1;
@@ -414,7 +414,7 @@ pub trait Trafficflchain {
     // the IPFS address of the dataset for each node
     #[view(get_node_dataset)]
     #[storage_mapper("node_datasets")]
-    fn node_datasets(&self, global_node_index: u16) -> SingleValueMapper<[u8; 46]>;
+    fn node_datasets(&self, global_node_index: u16, cluster_index: u16) -> SingleValueMapper<[u8; 46]>;
 
     // The IPFS address of the cluster adjacency matrix
     #[view(get_cluster_adjacency_matrix)]
