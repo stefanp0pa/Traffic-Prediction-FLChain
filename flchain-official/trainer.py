@@ -6,7 +6,18 @@ import json
 import numpy as np
 from utils.rabbitmq import init_rabbit
 from utils.utils import extract_file
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_cluster_adjacency_matrix
+from utils.model import create_model_from_hash
+from model.client import Client
+import torch
+import os
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data
+
+torch.cuda.device_count()
+torch.cuda.is_available()
+os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+USE_CUDA = torch.cuda.is_available()
+DEVICE = torch.device('cuda:0')
+print("CUDA:", USE_CUDA, DEVICE)
 
 trainer_id = int(sys.argv[1])
 WORKER_NAME = generate_random_string(10)
@@ -18,12 +29,21 @@ WORKER_NAME = generate_random_string(10)
 def train_model():
     print("Incepe antrenamentul bobita")
     clusters = query_get_all_clusters_per_node(trainer_id)
+    if clusters is None:
+        return
+
     for cluster in clusters:
-        print(cluster)
-        adj_matrix_hash = query_get_cluster_adjacency_matrix(cluster)
-        check, matrix_path = extract_file(adj_matrix_hash)
-        data = np.load(matrix_path)
-        matrix = data['matrix']
+        response = query_get_training_data(trainer_id, cluster)
+        if response is None:
+            pass
+    
+        body = json.loads(json.dumps(response))
+        unhash_data = create_model_from_hash(body)
+        client = Client(trainer_id, unhash_data['cluster_index'], unhash_data['matrix']['matrix'] ,unhash_data['dataset'],DEVICE)
+        del unhash_data['my_model']['node_index']
+        del unhash_data['my_model']['cluster_index']
+        client.load_model(unhash_data['my_model'], unhash_data['cluster_model'])
+        client.train()
 
 
 def stage_callback(ch, method, properties, body):

@@ -101,11 +101,13 @@ def hex_string_to_training_data(hex_string):
     cluster_adj_matrix_addr = hex_string[:92] # 46 bytes x 2 = 92 chars for cluster adjacency matrix address
     dataset_addr = hex_string[92:184] # 46 bytes x 2 = 92 chars for dataset address
     aggr_cluser_model_addr = hex_string[184:276] # 46 bytes x 2 = 92 chars for aggregated cluster model address
-    local_node_index = hex_string[276:280] # 2 bytes x 2 = 4 chars for local node index
+    footprint_model_addr = hex_string[276:368] # 46 bytes x 2 = 92 chars for footprint model address
+    local_node_index = hex_string[368:372] # 2 bytes x 2 = 4 chars for local node index
     decoded_response = {
         'cluster_adj_matrix_addr': hex_string_to_string(cluster_adj_matrix_addr),
         'dataset_addr': hex_string_to_string(dataset_addr),
         'aggr_cluser_model_addr': hex_string_to_string(aggr_cluser_model_addr),
+        'footprind_model_addr': hex_string_to_string(footprint_model_addr),
         'local_node_index': hex_string_to_numeric(local_node_index)
     }
     return decoded_response
@@ -192,7 +194,7 @@ from multiversx_sdk import ContractQueryBuilder
 from multiversx_sdk import ApiNetworkProvider
 from multiversx_sdk import AccountNonceHolder
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
@@ -283,11 +285,11 @@ def query_get_all_round_files(round, caller_user_addr = CALLER_USER_ADDR):
 	return decoded_response
 
 
-def query_get_training_data(node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
+def query_get_training_data(global_node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
 		function = "get_training_data",
-		call_arguments = [node_index, cluster_index],
+		call_arguments = [global_node_index, cluster_index],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
@@ -379,11 +381,11 @@ def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	return decoded_response
 
 
-def query_get_node_dataset(node_index, caller_user_addr = CALLER_USER_ADDR):
+def query_get_node_dataset(global_node_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
 		function = "get_node_dataset",
-		call_arguments = [node_index],
+		call_arguments = [global_node_index],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
@@ -427,15 +429,63 @@ def query_get_cluster_adjacency_matrix(cluster_index, caller_user_addr = CALLER_
 	return decoded_response
 
 
-def query_get_cluster_aggregation(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
+def query_get_cluster_aggregation_model(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
-		function = "get_cluster_aggregation",
+		function = "get_cluster_aggregation_model",
 		call_arguments = [cluster_index, round],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
-	print(f'>>>Performing immutable query to get_cluster_aggregation...')
+	print(f'>>>Performing immutable query to get_cluster_aggregation_model...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'array46<u8>'
+	return_data = return_data[0]
+	decode_method = base64_string_to_ipfs_address
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+	return decoded_response
+
+
+def query_get_candidate_model(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_candidate_model",
+		call_arguments = [cluster_index, round],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_candidate_model...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'variadic<array46<u8>>'
+	return_data = return_data[0]
+	decode_method = base64_string_to_ipfs_addresses
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+	return decoded_response
+
+
+def query_get_footprint_model(global_node_index, cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_footprint_model",
+		call_arguments = [global_node_index, cluster_index, round],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_footprint_model...')
 	response = network_provider.query_contract(query).to_dictionary()
 	print(response)
 	return_code = response['returnCode']
@@ -715,10 +765,10 @@ def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	return decoded_response
 
 
-def mutate_upload_dataset_file(file_location, node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_dataset_file(file_location, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
-		node_index - u16
+		global_node_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
@@ -728,7 +778,7 @@ def mutate_upload_dataset_file(file_location, node_index, wallet_path = WALLET_P
 		contract=contract_address,
 		function="upload_dataset_file",
 		gas_limit=60000000,
-		arguments=[file_location, node_index]
+		arguments=[file_location, global_node_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -740,7 +790,7 @@ def mutate_upload_dataset_file(file_location, node_index, wallet_path = WALLET_P
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_cluster_model_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_candidate_model_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -751,7 +801,7 @@ def mutate_upload_cluster_model_file(file_location, cluster_index, wallet_path =
 	call_transaction = sc_factory.create_transaction_for_execute(
 		sender=user_addr,
 		contract=contract_address,
-		function="upload_cluster_model_file",
+		function="upload_candidate_model_file",
 		gas_limit=60000000,
 		arguments=[file_location, cluster_index]
 	)
@@ -761,7 +811,33 @@ def mutate_upload_cluster_model_file(file_location, cluster_index, wallet_path =
 	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
 	call_transaction.nonce = curr_nonce
 	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
-	print(f'>>>Performing mutable call to upload_cluster_model_file...')
+	print(f'>>>Performing mutable call to upload_candidate_model_file...')
+	response = network_provider.send_transaction(call_transaction)
+	print(f'>>>Transaction hash: {response}')
+
+def mutate_upload_footprint_model_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+	"""Parameters description
+		file_location - array46<u8>
+		global_node_index - u16
+		cluster_index - u16
+	"""
+	signer = UserSigner.from_pem_file(Path(wallet_path))
+	user_addr = Address.from_bech32(caller_user_addr)
+	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
+	call_transaction = sc_factory.create_transaction_for_execute(
+		sender=user_addr,
+		contract=contract_address,
+		function="upload_footprint_model_file",
+		gas_limit=60000000,
+		arguments=[file_location, global_node_index, cluster_index]
+	)
+	local_nonce = nonce_cache.get(caller_user_addr, -1)
+	gateway_nonce = nonce_holder.get_nonce_then_increment()
+	curr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one
+	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
+	call_transaction.nonce = curr_nonce
+	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
+	print(f'>>>Performing mutable call to upload_footprint_model_file...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
@@ -815,10 +891,10 @@ def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WA
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_dataset_file(file_location, node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_dataset_file(file_location, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
-		node_index - u16
+		global_node_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
@@ -828,7 +904,7 @@ def mutate_clear_dataset_file(file_location, node_index, wallet_path = WALLET_PA
 		contract=contract_address,
 		function="clear_dataset_file",
 		gas_limit=60000000,
-		arguments=[file_location, node_index]
+		arguments=[file_location, global_node_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -866,7 +942,34 @@ def mutate_clear_cluster_aggregation_file(file_location, cluster_index, round, w
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_cluster_model_file(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_footprint_model_file(file_location, global_node_index, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+	"""Parameters description
+		file_location - array46<u8>
+		global_node_index - u16
+		cluster_index - u16
+		round - u32
+	"""
+	signer = UserSigner.from_pem_file(Path(wallet_path))
+	user_addr = Address.from_bech32(caller_user_addr)
+	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
+	call_transaction = sc_factory.create_transaction_for_execute(
+		sender=user_addr,
+		contract=contract_address,
+		function="clear_footprint_model_file",
+		gas_limit=60000000,
+		arguments=[file_location, global_node_index, cluster_index, round]
+	)
+	local_nonce = nonce_cache.get(caller_user_addr, -1)
+	gateway_nonce = nonce_holder.get_nonce_then_increment()
+	curr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one
+	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
+	call_transaction.nonce = curr_nonce
+	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
+	print(f'>>>Performing mutable call to clear_footprint_model_file...')
+	response = network_provider.send_transaction(call_transaction)
+	print(f'>>>Transaction hash: {response}')
+
+def mutate_clear_candidate_model_file(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -878,7 +981,7 @@ def mutate_clear_cluster_model_file(file_location, cluster_index, round, wallet_
 	call_transaction = sc_factory.create_transaction_for_execute(
 		sender=user_addr,
 		contract=contract_address,
-		function="clear_cluster_model_file",
+		function="clear_candidate_model_file",
 		gas_limit=60000000,
 		arguments=[file_location, cluster_index, round]
 	)
@@ -888,7 +991,7 @@ def mutate_clear_cluster_model_file(file_location, cluster_index, round, wallet_
 	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
 	call_transaction.nonce = curr_nonce
 	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
-	print(f'>>>Performing mutable call to clear_cluster_model_file...')
+	print(f'>>>Performing mutable call to clear_candidate_model_file...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 

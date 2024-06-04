@@ -15,12 +15,7 @@ ACCOUNTS_PATH = 'accounts'
 TRANSACTIONS_PATH = 'transactions'
 
 
-<<<<<<< HEAD
-SC_ADDR = 'erd1qqqqqqqqqqqqqpgqsav8rd0pkf96yzmgvz3htkugwt2x54ntch8qsx5q3e'
-=======
-
-SC_ADDR = 'erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m'
->>>>>>> 09222bf (Prepare rebase)
+SC_ADDR = 'erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue'
 SC_ABI_ADDR = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
 
 TRANSFERS_PATH = 'transfers'

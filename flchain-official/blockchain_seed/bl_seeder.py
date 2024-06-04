@@ -18,34 +18,38 @@ def create_cluster():
     write_hash(clusters, 'test.txt')
     # write_hash(clusters, 'hash/clusters_node.txt')
 
-
 def create_data_per_node():
+    graph, leaders = create_infrastructure()
     directory_path='train_nodes'
     no_nodes = 170
     check_and_create_directory(directory_path)
     data = np.load('data/flow_occupy.npz')
     hash_codes = []
-    for index in range(0, no_nodes):
-        print(f"Node: {index + 1}")
-        file_path = f'{directory_path}/{index + 1}.npz'
-        new_data = {
-            'train_x':data['train_x'][:, [index], :, :],
-            'train_target':data['train_target'],
-            'test_x':data['test_x'][:, [index], :, :],
-            'test_target':data['test_target'],
-            'mean':data['mean'][:, :, [0, 2], :],
-            'std':data['std'][:, :, [0, 2], :]
-        }
-        np.savez_compressed(file_path, 
-            train_x=new_data['train_x'], 
-            train_target=new_data['train_target'], 
-            test_x=new_data['test_x'], 
-            test_target=new_data['test_target'],
-            mean=new_data['mean'],
-            std=new_data['std'],
-            node=index+1)
-        hash_codes.append(upload_file(file_path))
-    write_hash(hash_codes, 'hash/train_nodes_hash.txt')
+
+    for index_cluster, leader in enumerate(leaders):
+        cluster_nodes = [node for node in graph if leader in graph[node]['leaders']]
+        for node in cluster_nodes:
+            print(f"Cluster: {index_cluster + 1} Node: {node}")
+            file_path = f'{directory_path}/{index_cluster + 1}_{node}.npz'
+            new_data = {
+                'train_x':data['train_x'][:, [node], [0, 2], :],
+                'train_target':data['train_target'][:, cluster_nodes, :],
+                'test_x':data['test_x'][:, [node], [0, 2], :],
+                'test_target':data['test_target'][:, cluster_nodes, :],
+                'mean':data['mean'][:, :, [0, 2], :],
+                'std':data['std'][:, :, [0, 2], :]
+            }
+            np.savez_compressed(file_path, 
+                train_x=new_data['train_x'], 
+                train_target=new_data['train_target'], 
+                test_x=new_data['test_x'], 
+                test_target=new_data['test_target'],
+                mean=new_data['mean'],
+                std=new_data['std'],
+                node=node+1)
+            hash_codes.append([index_cluster + 1, node, upload_file(file_path)])
+    
+    write_hash(hash_codes, 'hash/dataset.txt')
 
 
 def create_adj_matrix():
@@ -65,7 +69,7 @@ def create_adj_matrix():
                             nodes=cluster_nodes)
         adj_hash_clusters.append(upload_file(adj_cluster_path))
     
-    write_hash(adj_hash_clusters, 'hash/adj_clusters_hash.txt')
+    write_hash(adj_hash_clusters, 'hash/cluster_structure.txt')
 
 
 def create_global_model():
@@ -83,7 +87,7 @@ def create_global_model():
         torch.save(model.state_dict(), model_cluster_path)
         model_hash_clusters.append(upload_file(model_cluster_path))
     
-    write_hash(model_hash_clusters, 'hash/model_hash_clusters.txt')
+    write_hash(model_hash_clusters, 'hash/cluster_aggregation_model.txt')
 
 
 def create_cluster_model():
@@ -105,12 +109,12 @@ def create_cluster_model():
             torch.save(model_dict, model_cluster_path)
             model_hash_clusters.append([index_cluster + 1, node, upload_file(model_cluster_path)])
     
-    write_hash(model_hash_clusters, 'hash/node_model_cluster_hash.txt') 
+    write_hash(model_hash_clusters, 'hash/footprint_model.txt') 
 
 
 if __name__ == "__main__":
     # create_cluster()
-    # create_data_per_node()
+    create_data_per_node()
     # create_adj_matrix()
     # create_global_model()
-    create_cluster_model()
+    # create_cluster_model()

@@ -1218,4 +1218,5 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 # query_get_files_count()
 # mutate_set_round(1)
 # query_get_training_data(158, 1)
-
+mutate_test_event(5)
+# query_get_training_data(16, 20)
