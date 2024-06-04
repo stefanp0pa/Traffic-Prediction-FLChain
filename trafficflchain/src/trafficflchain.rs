@@ -13,6 +13,20 @@ use filetype::FileType;
 use evaluation_status::EvaluationStatus;
 use stage::Stage;
 
+<<<<<<< HEAD
+=======
+// Former SC: erd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s
+// Former Owner: erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu
+
+// New SC: erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v
+// New Owner: erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu
+
+// New SC: erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m
+// New Owner: erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu
+
+// New SC: erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m
+
+>>>>>>> 09222bf (Prepare rebase)
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct GraphTopology<M: ManagedTypeApi> {
     pub vertices_count: u64,
