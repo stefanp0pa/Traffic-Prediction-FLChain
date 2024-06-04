@@ -2,7 +2,7 @@ POST https://devnet-api.multiversx.com/query HTTP/1.1
 Content-Type: application/json
 
 {
-  "scAddress": "erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m",
+  "scAddress": "erd1qqqqqqqqqqqqqpgqsav8rd0pkf96yzmgvz3htkugwt2x54ntch8qsx5q3e",
   "funcName": "get_all_round_files",
   "args": [0]
 }

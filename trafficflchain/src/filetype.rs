@@ -4,12 +4,8 @@ multiversx_sc::derive_imports!();
 pub enum FileType {
     Undefined,
     Dataset,
-    ClusterModel,
-    ClusterStructure, // adjacency matrix
-    // ClusterDescription, // cluster encompassing nodes
-    ClusterAggregationModel,
-    // SensitiveDataBatch,
-    // PublicDataBatch,
-    // Model,
-    // AggregationResult,
+    FootprintModel, // per (node, cluster) tuple each round
+    ClusterStructure, // per cluster, adjacency matrix
+    ClusterAggregationModel, // per cluster each round
+    CandidateModel, // per (node, cluster) tuple each round
 }

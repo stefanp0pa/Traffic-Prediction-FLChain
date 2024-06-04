@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           40
+// Endpoints:                           44
 // Async Callback (empty):               1
-// Total number of exported functions:  42
+// Total number of exported functions:  46
 
 #![no_std]
 #![allow(internal_features)]
@@ -22,12 +22,14 @@ multiversx_sc_wasm_adapter::endpoints! {
         init => init
         upgrade => upgrade
         upload_dataset_file => upload_dataset_file
-        upload_cluster_model_file => upload_cluster_model_file
+        upload_candidate_model_file => upload_candidate_model_file
+        upload_footprint_model_file => upload_footprint_model_file
         upload_cluster_aggregation_file => upload_cluster_aggregation_file
         upload_adj_matrix_file => upload_adj_matrix_file
         clear_dataset_file => clear_dataset_file
         clear_cluster_aggregation_file => clear_cluster_aggregation_file
-        clear_cluster_model_file => clear_cluster_model_file
+        clear_footprint_model_file => clear_footprint_model_file
+        clear_candidate_model_file => clear_candidate_model_file
         clear_adj_matrix_file => clear_adj_matrix_file
         upload_cluster_description => upload_cluster_description
         clear_cluster_description => clear_cluster_description
@@ -47,7 +49,9 @@ multiversx_sc_wasm_adapter::endpoints! {
         set_stage => set_stage
         get_node_dataset => node_datasets
         get_cluster_adjacency_matrix => cluster_adj_matrices
-        get_cluster_aggregation => cluster_aggregation
+        get_cluster_aggregation_model => aggregation_models
+        get_candidate_model => candidate_models
+        get_footprint_model => footprint_models
         get_user => users
         get_file => files
         get_stake => stakes

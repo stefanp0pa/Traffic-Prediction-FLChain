@@ -13,17 +13,6 @@ use filetype::FileType;
 use evaluation_status::EvaluationStatus;
 use stage::Stage;
 
-// Former SC: erd1qqqqqqqqqqqqqpgqz82nup6jgsxhf0xzx6yyg4xm2tcqsd27ch8quuq97s
-// Former Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
-
-// New SC: erd1qqqqqqqqqqqqqpgqumcqj0zzaqfxepa6e0azrfvplyk5wxndch8qjpdl6v
-// New Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
-
-// New SC: erd1qqqqqqqqqqqqqpgqcpykursmgcp6mypuf9pvw7rax4q7ys7xch8quh9p2r
-// New Owner: erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz
-
-// New SC: erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m
-
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
 pub struct GraphTopology<M: ManagedTypeApi> {
     pub vertices_count: u64,
@@ -44,7 +33,8 @@ pub struct ClusterNode {
 pub struct TrainingData {
     cluster_adj_matrix_addr: [u8; 46],
     dataset_addr: [u8; 46],
-    aggr_cluster_model : [u8; 46],
+    aggr_cluster_model_addr : [u8; 46],
+    footprind_model_addr: [u8; 46],
     local_node_index: u16
 }
 
@@ -122,21 +112,30 @@ pub trait Trafficflchain {
 
     // The dataset file for each node, we only store the IPFS address and it is the consumer's responsibility to fetch it
     #[endpoint]
-    fn upload_dataset_file(&self, file_location: [u8; 46], node_index: u16) {
+    fn upload_dataset_file(&self, file_location: [u8; 46], global_node_index: u16) {
         let author_addr = self.blockchain().get_caller();
         self.upload_file(file_location, FileType::Dataset, author_addr);
-        self.node_datasets(node_index).set(file_location.clone());
+        self.node_datasets(global_node_index).set(file_location.clone());
     }
 
     // This method should be used in-between the Training and Aggregation stages
     // The trainer uploads the model file for a specific cluster and awaits evaluation
     // Later, based on the evaluation score, the model may be considered in the Aggregation stage
     #[endpoint]
-    fn upload_cluster_model_file(&self, file_location: [u8; 46], cluster_index: u16) {
+    fn upload_candidate_model_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
-        self.upload_file(file_location, FileType::ClusterModel, author_addr);
-        self.cluster_models(cluster_index, round).insert(file_location);
+        self.upload_file(file_location, FileType::CandidateModel, author_addr);
+        self.candidate_models(cluster_index, round).insert(file_location);
+    }
+
+    // This method should be used in the Seeding stage and at the end of each Training stage
+    #[endpoint]
+    fn upload_footprint_model_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
+        let author_addr = self.blockchain().get_caller();
+        let round = self.round().get();
+        self.upload_file(file_location, FileType::FootprintModel, author_addr);
+        self.footprint_models(global_node_index, cluster_index, round).set(file_location);
     }
 
     // This method should be used following the Aggregation stage or right at the Seeding stage
@@ -146,7 +145,7 @@ pub trait Trafficflchain {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
         self.upload_file(file_location, FileType::ClusterAggregationModel, author_addr);
-        self.cluster_aggregation(cluster_index, round).set(file_location);
+        self.aggregation_models(cluster_index, round).set(file_location);
     }
 
     // This method should be used in the Seeding stage when seeding the cluster structure
@@ -158,21 +157,27 @@ pub trait Trafficflchain {
     }
 
     #[endpoint]
-    fn clear_dataset_file(&self, file_location: [u8; 46], node_index: u16) {
+    fn clear_dataset_file(&self, file_location: [u8; 46], global_node_index: u16) {
         self.clear_file(file_location);
-        self.node_datasets(node_index).clear();
+        self.node_datasets(global_node_index).clear();
     }
 
     #[endpoint]
     fn clear_cluster_aggregation_file(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
         self.clear_file(file_location);
-        self.cluster_aggregation(cluster_index, round).clear();
+        self.aggregation_models(cluster_index, round).clear();
     }
 
     #[endpoint]
-    fn clear_cluster_model_file(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
+    fn clear_footprint_model_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16, round: usize) {
         self.clear_file(file_location);
-        self.cluster_models(cluster_index, round).swap_remove(&file_location);
+        self.footprint_models(global_node_index, cluster_index, round).clear();
+    }
+
+    #[endpoint]
+    fn clear_candidate_model_file(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
+        self.clear_file(file_location);
+        self.candidate_models(cluster_index, round).swap_remove(&file_location);
     }
     
     #[endpoint]
@@ -248,22 +253,25 @@ pub trait Trafficflchain {
     // - The aggregated model of the cluster Y from the previous round (this is the baseline model for the new round)
     // - The local index of the node X in the cluster Y
     #[view]
-    fn get_training_data(&self, node_index: u16, cluster_index: u16) -> TrainingData {
+    fn get_training_data(&self, global_node_index: u16, cluster_index: u16) -> TrainingData {
         let adj_matrix = self.cluster_adj_matrices(cluster_index).get();
         if self.cluster_adj_matrices(cluster_index).is_empty() {
             sc_panic!("Cluster adjacency matrix does not exist!");
         }
-        let data_addr = self.node_datasets(node_index).get();
-        if self.node_datasets(node_index).is_empty() {
+        let data_addr = self.node_datasets(global_node_index).get();
+        if self.node_datasets(global_node_index).is_empty() {
             sc_panic!("Dataset does not exist!");
         }
         let prev_round = self.round().get() - 1;
-        let prev_aggr_model = self.cluster_aggregation(cluster_index, prev_round).get();
-        if self.cluster_aggregation(cluster_index, prev_round).is_empty() {
+        let prev_aggr_model = self.aggregation_models(cluster_index, prev_round).get();
+        if self.aggregation_models(cluster_index, prev_round).is_empty() {
             sc_panic!("No previous aggregated model to use!");
         }
+
+        let footprint_model_addr = self.footprint_models(global_node_index, cluster_index, prev_round).get();
+
         let local_node_index = self.cluster_nodes(cluster_index)
-            .iter().find(|cn| cn.global_node_index == node_index).unwrap().local_node_index;
+            .iter().find(|cn| cn.global_node_index == global_node_index).unwrap().local_node_index;
         if self.cluster_nodes(cluster_index).is_empty() {
             sc_panic!("Node does not belong to any cluster!");
         }
@@ -271,7 +279,8 @@ pub trait Trafficflchain {
         TrainingData {
             cluster_adj_matrix_addr: adj_matrix,
             dataset_addr: data_addr,
-            aggr_cluster_model: prev_aggr_model,
+            aggr_cluster_model_addr: prev_aggr_model,
+            footprind_model_addr: footprint_model_addr,
             local_node_index
         }
     }
@@ -352,7 +361,7 @@ pub trait Trafficflchain {
     #[view]
     fn get_cluster_models_for_aggregation(&self, cluster_index: u16, round_index: usize) -> ManagedVec<[u8; 46]> {
         let mut output: ManagedVec<[u8; 46]> = ManagedVec::new();
-        for model in self.cluster_models(cluster_index, round_index).iter() {
+        for model in self.candidate_models(cluster_index, round_index).iter() {
             output.push(model);
         }
         output
@@ -405,7 +414,7 @@ pub trait Trafficflchain {
     // the IPFS address of the dataset for each node
     #[view(get_node_dataset)]
     #[storage_mapper("node_datasets")]
-    fn node_datasets(&self, node_index: u16) -> SingleValueMapper<[u8; 46]>;
+    fn node_datasets(&self, global_node_index: u16) -> SingleValueMapper<[u8; 46]>;
 
     // The IPFS address of the cluster adjacency matrix
     #[view(get_cluster_adjacency_matrix)]
@@ -416,16 +425,22 @@ pub trait Trafficflchain {
     fn cluster_nodes(&self, cluster_index: u16) -> UnorderedSetMapper<ClusterNode>;
 
     #[storage_mapper("node_clusters")]
-    fn node_clusters(&self, node_index: u16) -> UnorderedSetMapper<u16>;
+    fn node_clusters(&self, global_node_index: u16) -> UnorderedSetMapper<u16>;
 
     // The IPFS address of the cluster aggregation model at each round
-    #[view(get_cluster_aggregation)]
-    #[storage_mapper("cluster_aggregations")]
-    fn cluster_aggregation(&self, cluster_index: u16, round: usize) -> SingleValueMapper<[u8; 46]>;
+    #[view(get_cluster_aggregation_model)]
+    #[storage_mapper("aggregation_models")]
+    fn aggregation_models(&self, cluster_index: u16, round: usize) -> SingleValueMapper<[u8; 46]>;
 
-    // The IPFS address of the cluster model at each round
-    #[storage_mapper("cluster_models")]
-    fn cluster_models(&self, cluster_index: u16, round: usize) -> UnorderedSetMapper<[u8; 46]>;
+    // The IPFS address of the candidate model for each (node, cluster, round) tuple
+    #[view(get_candidate_model)]
+    #[storage_mapper("candidate_models")]
+    fn candidate_models(&self, cluster_index: u16, round: usize) -> UnorderedSetMapper<[u8; 46]>;
+
+    // The IPFS address of the footprint model for each (node, round) tuple
+    #[view(get_footprint_model)]
+    #[storage_mapper("footprint_models")]
+    fn footprint_models(&self, global_node_index: u16, cluster_index: u16, round: usize) -> SingleValueMapper<[u8; 46]>;
 
     #[view(get_user)]
     #[storage_mapper("users")]

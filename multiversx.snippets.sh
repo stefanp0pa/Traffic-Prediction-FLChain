@@ -7,7 +7,7 @@ WALLETS_DIR="wallets"
 MASTER_WALLET="$PROJECT_PATH/wallets/master.pem"
 DWARF_WALLET="$PROJECT_PATH/wallets/dwarf.pem"
 
-SC_ADDR="erd1qqqqqqqqqqqqqpgq3vwx0z53r8km2re2xzqljzgwuffr83kkch8qpg4u8m"
+SC_ADDR="erd1qqqqqqqqqqqqqpgqsav8rd0pkf96yzmgvz3htkugwt2x54ntch8qsx5q3e"
 
 BYTECODE="$PROJECT_PATH/trafficflchain/output/trafficflchain.wasm"
 

@@ -101,11 +101,13 @@ def hex_string_to_training_data(hex_string):
     cluster_adj_matrix_addr = hex_string[:92] # 46 bytes x 2 = 92 chars for cluster adjacency matrix address
     dataset_addr = hex_string[92:184] # 46 bytes x 2 = 92 chars for dataset address
     aggr_cluser_model_addr = hex_string[184:276] # 46 bytes x 2 = 92 chars for aggregated cluster model address
-    local_node_index = hex_string[276:280] # 2 bytes x 2 = 4 chars for local node index
+    footprint_model_addr = hex_string[276:368] # 46 bytes x 2 = 92 chars for footprint model address
+    local_node_index = hex_string[368:372] # 2 bytes x 2 = 4 chars for local node index
     decoded_response = {
         'cluster_adj_matrix_addr': hex_string_to_string(cluster_adj_matrix_addr),
         'dataset_addr': hex_string_to_string(dataset_addr),
         'aggr_cluser_model_addr': hex_string_to_string(aggr_cluser_model_addr),
+        'footprind_model_addr': hex_string_to_string(footprint_model_addr),
         'local_node_index': hex_string_to_numeric(local_node_index)
     }
     return decoded_response

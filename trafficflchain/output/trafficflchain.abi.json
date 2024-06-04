@@ -46,19 +46,38 @@
                     "type": "array46<u8>"
                 },
                 {
-                    "name": "node_index",
+                    "name": "global_node_index",
                     "type": "u16"
                 }
             ],
             "outputs": []
         },
         {
-            "name": "upload_cluster_model_file",
+            "name": "upload_candidate_model_file",
             "mutability": "mutable",
             "inputs": [
                 {
                     "name": "file_location",
                     "type": "array46<u8>"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "upload_footprint_model_file",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
                 },
                 {
                     "name": "cluster_index",
@@ -106,7 +125,7 @@
                     "type": "array46<u8>"
                 },
                 {
-                    "name": "node_index",
+                    "name": "global_node_index",
                     "type": "u16"
                 }
             ],
@@ -132,7 +151,30 @@
             "outputs": []
         },
         {
-            "name": "clear_cluster_model_file",
+            "name": "clear_footprint_model_file",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "clear_candidate_model_file",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -249,7 +291,7 @@
             "mutability": "readonly",
             "inputs": [
                 {
-                    "name": "node_index",
+                    "name": "global_node_index",
                     "type": "u16"
                 },
                 {
@@ -390,7 +432,7 @@
             "mutability": "readonly",
             "inputs": [
                 {
-                    "name": "node_index",
+                    "name": "global_node_index",
                     "type": "u16"
                 }
             ],
@@ -416,9 +458,52 @@
             ]
         },
         {
-            "name": "get_cluster_aggregation",
+            "name": "get_cluster_aggregation_model",
             "mutability": "readonly",
             "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "array46<u8>"
+                }
+            ]
+        },
+        {
+            "name": "get_candidate_model",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<array46<u8>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "get_footprint_model",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
+                },
                 {
                     "name": "cluster_index",
                     "type": "u16"
@@ -793,7 +878,7 @@
                     "discriminant": 1
                 },
                 {
-                    "name": "ClusterModel",
+                    "name": "FootprintModel",
                     "discriminant": 2
                 },
                 {
@@ -803,6 +888,10 @@
                 {
                     "name": "ClusterAggregationModel",
                     "discriminant": 4
+                },
+                {
+                    "name": "CandidateModel",
+                    "discriminant": 5
                 }
             ]
         },
@@ -888,7 +977,11 @@
                     "type": "array46<u8>"
                 },
                 {
-                    "name": "aggr_cluster_model",
+                    "name": "aggr_cluster_model_addr",
+                    "type": "array46<u8>"
+                },
+                {
+                    "name": "footprind_model_addr",
                     "type": "array46<u8>"
                 },
                 {
