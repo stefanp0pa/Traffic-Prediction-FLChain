@@ -101,7 +101,7 @@ def hex_string_to_training_data(hex_string):
     cluster_adj_matrix_addr = hex_string[:92] # 46 bytes x 2 = 92 chars for cluster adjacency matrix address
     dataset_addr = hex_string[92:184] # 46 bytes x 2 = 92 chars for dataset address
     aggr_cluser_model_addr = hex_string[184:276] # 46 bytes x 2 = 92 chars for aggregated cluster model address
-    local_node_index = hex_string[276:278] # 2 bytes x 1 = 2 chars for local node index
+    local_node_index = hex_string[276:280] # 2 bytes x 2 = 4 chars for local node index
     decoded_response = {
         'cluster_adj_matrix_addr': hex_string_to_string(cluster_adj_matrix_addr),
         'dataset_addr': hex_string_to_string(dataset_addr),
@@ -125,7 +125,6 @@ def base64_string_to_file_array(encoded_string):
         segment = segments[i]    
         decoded_response.append(hex_string_to_file(segment))
         
-    print(decoded_response)
     return decoded_response
 
 def base64_string_to_file(encoded_string):
@@ -170,6 +169,19 @@ def base64_string_to_list_u16(encoded_string):
         u16_numbers.append(decoded_response)
     return u16_numbers
 
+def base64_string_to_list_cluster_node(encoded_string):
+    if not encoded_string:
+        return []
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    cluster_node_size = 8 # 4 bytes + 4 bytes
+    cluster_nodes = []
+    for i in range(0, len(decoded_bytes), cluster_node_size):
+        cluster_nodes.append({
+            'global_node_index': hex_string_to_numeric(decoded_bytes[i:i + 4]),
+            'local_node_index': hex_string_to_numeric(decoded_bytes[i + 4:i + 8])
+        })
+    return cluster_nodes
+
 from pathlib import Path
 from multiversx_sdk import TokenComputer
 from multiversx_sdk import SmartContractTransactionsFactory
@@ -199,28 +211,6 @@ network_provider = ApiNetworkProvider(NETWORK_PROVIDER)
 # to keep track of it to avoid nonce desynchronization errors
 nonce_cache = {} 
 
-def query_get_all_round_files(round, caller_user_addr = CALLER_USER_ADDR):
-	builder = ContractQueryBuilder(
-		contract = contract_address,
-		function = "get_all_round_files",
-		call_arguments = [round],
-		caller = Address.from_bech32(caller_user_addr)
-	)
-	query = builder.build()
-	print(f'>>>Performing immutable query to get_all_round_files...')
-	response = network_provider.query_contract(query).to_dictionary()
-	print(response)
-	return_code = response['returnCode']
-	if return_code != 'ok':
-		print('Error in the response')
-		return None
-	return_data = response['returnData']
-	output_type = 'List<File>'
-	return_data = return_data[0]
-	decode_method = base64_string_to_file_array
-	decoded_response = decode_method(return_data)
-	print(decoded_response)
-
 def query_get_all_clusters_per_node(node_global_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
@@ -242,6 +232,56 @@ def query_get_all_clusters_per_node(node_global_index, caller_user_addr = CALLER
 	decode_method = base64_string_to_list_u16
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
+
+def query_get_all_nodes_per_cluster(cluster_index, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_all_nodes_per_cluster",
+		call_arguments = [cluster_index],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_all_nodes_per_cluster...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'List<ClusterNode>'
+	return_data = return_data[0]
+	decode_method = base64_string_to_list_cluster_node
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+	return decoded_response
+
+
+def query_get_all_round_files(round, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_all_round_files",
+		call_arguments = [round],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_all_round_files...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'List<File>'
+	return_data = return_data[0]
+	decode_method = base64_string_to_file_array
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+	return decoded_response
+
 
 def query_get_training_data(node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -264,6 +304,8 @@ def query_get_training_data(node_index, cluster_index, caller_user_addr = CALLER
 	decode_method = base64_string_to_training_data
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -286,16 +328,18 @@ def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADD
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
 
-def query_get_aggregated_models(cluster_index, round_index, caller_user_addr = CALLER_USER_ADDR):
+
+def query_get_cluster_models_for_aggregation(cluster_index, round_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
-		function = "get_aggregated_models",
+		function = "get_cluster_models_for_aggregation",
 		call_arguments = [cluster_index, round_index],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
-	print(f'>>>Performing immutable query to get_aggregated_models...')
+	print(f'>>>Performing immutable query to get_cluster_models_for_aggregation...')
 	response = network_provider.query_contract(query).to_dictionary()
 	print(response)
 	return_code = response['returnCode']
@@ -308,6 +352,8 @@ def query_get_aggregated_models(cluster_index, round_index, caller_user_addr = C
 	decode_method = base64_string_to_ipfs_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -330,6 +376,8 @@ def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_array_of_bech32_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_node_dataset(node_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -352,6 +400,8 @@ def query_get_node_dataset(node_index, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_cluster_adjacency_matrix(cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -374,6 +424,8 @@ def query_get_cluster_adjacency_matrix(cluster_index, caller_user_addr = CALLER_
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_cluster_aggregation(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -396,6 +448,8 @@ def query_get_cluster_aggregation(cluster_index, round, caller_user_addr = CALLE
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_user(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -418,6 +472,8 @@ def query_get_user(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_file(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -440,6 +496,8 @@ def query_get_file(file_location, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_file
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_stake(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -462,6 +520,8 @@ def query_get_stake(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_reputation(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -484,6 +544,8 @@ def query_get_reputation(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_file_author(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -506,6 +568,8 @@ def query_get_file_author(file_location, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_bech32_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_files_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -528,6 +592,8 @@ def query_get_files_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_users_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -550,6 +616,8 @@ def query_get_users_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_nodes_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -572,6 +640,8 @@ def query_get_nodes_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_clusters_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -594,6 +664,8 @@ def query_get_clusters_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_round(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -616,6 +688,8 @@ def query_get_round(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -638,6 +712,8 @@ def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def mutate_upload_dataset_file(file_location, node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
@@ -1078,7 +1154,3 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-# query_get_all_clusters_per_node(112)
-# query_get_cluster_adjacency_matrix(8)
-# query_get_cluster_aggregation(1, 0)
-query_get_training_data(112, 1)

@@ -3,13 +3,27 @@ from utils.utils import generate_random_string
 import constants
 import pika
 import json
+import numpy as np
 from utils.rabbitmq import init_rabbit
+from utils.utils import extract_file
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_cluster_adjacency_matrix
 
-trainer_id = sys.argv[1]
+trainer_id = int(sys.argv[1])
 WORKER_NAME = generate_random_string(10)
 
+# query_get_all_clusters_per_node(112)
+# query_get_cluster_adjacency_matrix(8)
+# query_get_cluster_aggregation(1, 0)
+# query_get_training_data(112, 1)
 def train_model():
     print("Incepe antrenamentul bobita")
+    clusters = query_get_all_clusters_per_node(trainer_id)
+    for cluster in clusters:
+        print(cluster)
+        adj_matrix_hash = query_get_cluster_adjacency_matrix(cluster)
+        check, matrix_path = extract_file(adj_matrix_hash)
+        data = np.load(matrix_path)
+        matrix = data['matrix']
 
 
 def stage_callback(ch, method, properties, body):

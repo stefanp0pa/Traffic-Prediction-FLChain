@@ -24,5 +24,5 @@ def check_for_duplicate_lines(file_path):
         print(f"An error occurred: {e}")
 
 # Example usage:
-file_path = 'hash/train_nodes_hash.txt'
+file_path = 'hash/node_model_cluster_hash.txt'
 check_for_duplicate_lines(file_path)

@@ -1,5 +1,6 @@
 venv/
 dataset/
+__pycache__/
 sc-version.txt
 utils/__pycache__/
 multiversx.snippets.sh
@@ -9,4 +10,8 @@ flchain-official/blockchain_seed/data
 flchain-official/blockchain_seed/hash
 flchain-official/blockchain_seed/model_clusters
 flchain-official/blockchain_seed/train_nodes
+flchain-official/blockchain_seed/node_model_cluster
+flchain-official/matrix.npz
+flchain-events-processer/__pycache__
+flchain-official/utils/__pycache__/
 FL/data_node

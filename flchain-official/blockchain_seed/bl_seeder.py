@@ -86,8 +86,31 @@ def create_global_model():
     write_hash(model_hash_clusters, 'hash/model_hash_clusters.txt')
 
 
+def create_cluster_model():
+    graph, leaders = create_infrastructure()
+    model_hash_clusters = []
+    model_dir = "node_model_cluster"
+    distance_df_filename = 'data/roads.csv'
+    check_and_create_directory(model_dir)
+  
+    for index_cluster, leader in enumerate(leaders):
+        cluster_nodes = [node for node in graph if leader in graph[node]['leaders']]
+        matrix = adjancency_matrix_cluster(distance_df_filename, cluster_nodes)
+        for index_node, node, in enumerate(cluster_nodes):
+            model = create_model(matrix, index_node)
+            model_cluster_path = f"{model_dir}/{index_cluster}_{index_node}.pth"
+            model_dict = model.state_dict()
+            model_dict['cluster_index'] = index_cluster
+            model_dict['node_index'] = index_node 
+            torch.save(model_dict, model_cluster_path)
+            model_hash_clusters.append([index_cluster + 1, node, upload_file(model_cluster_path)])
+    
+    write_hash(model_hash_clusters, 'hash/node_model_cluster_hash.txt') 
+
+
 if __name__ == "__main__":
-    create_cluster()  
+    # create_cluster()
     # create_data_per_node()
     # create_adj_matrix()
     # create_global_model()
+    create_cluster_model()

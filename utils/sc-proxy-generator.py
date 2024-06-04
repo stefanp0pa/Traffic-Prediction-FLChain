@@ -169,7 +169,8 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     file_handle.write("\treturn_data = return_data[0]\n")
     file_handle.write(f"\tdecode_method = {choose_decode_method(output_type)}\n")
     file_handle.write("\tdecoded_response = decode_method(return_data)\n")
-    file_handle.write("\tprint(decoded_response)\n\n")
+    file_handle.write("\tprint(decoded_response)\n")
+    file_handle.write("\treturn decoded_response\n\n\n")
 
 
 def generate_for_mutable_endpoint(file_handle, endpoint_data):
