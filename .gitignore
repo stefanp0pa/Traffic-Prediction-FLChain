@@ -2,3 +2,10 @@ venv/
 dataset/
 sc-version.txt
 utils/__pycache__/
+multiversx.snippets.sh
+flchain-official/blockchain_seed/adj_clusters
+flchain-official/blockchain_seed/clusters_nodes
+flchain-official/blockchain_seed/data
+flchain-official/blockchain_seed/hash
+flchain-official/blockchain_seed/model_clusters
+flchain-official/blockchain_seed/train_nodes
