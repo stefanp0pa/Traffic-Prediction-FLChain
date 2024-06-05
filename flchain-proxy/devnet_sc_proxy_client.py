@@ -1212,3 +1212,6 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	print(f'>>>Performing mutable call to test_event...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
+
+mutate_set_stage(4)
+# mutate_test_event(5)

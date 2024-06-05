@@ -10,7 +10,7 @@ from utils.model import create_model_from_hash
 from model.client import Client
 import torch
 import os
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data, mutate_upload_footprint_model_file
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file
 
 torch.cuda.device_count()
 torch.cuda.is_available()
@@ -40,9 +40,17 @@ def train_model():
         del unhash_data['my_model']['cluster_index']
         client.load_model(unhash_data['my_model'], unhash_data['cluster_model'])
         client.train()
+
         model_save_path = client.get_last_model_file()
         file_hash = upload_file(model_save_path)
-        mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster_index())
+        print(f"Footprint file hash: {file_hash}")
+        mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster())
+
+        client.save_best_model()
+        model_save_path = client.get_last_model_file()
+        file_hash = upload_file(model_save_path)
+        print(f"Candidate file hash:{file_hash}")
+        mutate_upload_candidate_model_file(file_hash, client.get_cluster())
 
 
 def stage_callback(ch, method, properties, body):
