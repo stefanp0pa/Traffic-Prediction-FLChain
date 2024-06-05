@@ -25,7 +25,7 @@ class Client:
         self.__adj_matrix = adj_matrix
         self.DEVICE = DEVICE
         self.cluster = cluster
-        self.cluster_index = cluster_index
+        self.cluster_index = cluster_index - 1
         self.__train_loader, self.__train_target_tensor =  create_dataloaders('train_x', 'train_target', data, DEVICE)
         self.__test_loader, self.__test_target_tensor = create_dataloaders('test_x', 'test_target', data, DEVICE)
         self.__mean = data['mean']
@@ -106,13 +106,20 @@ class Client:
                 self.best_model = copy.deepcopy(self.model)
 
             print(f"Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}")
-        
+
+        self.save_best_model()
+
+
+    def save_best_model(self):
+
         save_directory = f"{constants.model_save_directory}/{self.__node}_{self.cluster}"
         create_directory(save_directory)
         now = datetime.now()
         timestamp = now.timestamp()
         self.save_path = f"{save_directory}/{timestamp}.pth"
-        torch.save(self.best_model.state_dict(), self.save_path)
+        model = self.best_model.state_dict()
+        model['signature'] = timestamp
+        torch.save(model, self.save_path)
         
 
     def get_node(self):
@@ -121,6 +128,9 @@ class Client:
 
     def get_cluster_index(self):
         return self.cluster_index
+    
+    def get_cluster(self):
+        return self.cluster
 
 
     def send_current_model(self):

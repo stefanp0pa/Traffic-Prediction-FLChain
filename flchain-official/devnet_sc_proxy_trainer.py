@@ -333,30 +333,6 @@ def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADD
 	return decoded_response
 
 
-def query_get_cluster_models_for_aggregation(cluster_index, round_index, caller_user_addr = CALLER_USER_ADDR):
-	builder = ContractQueryBuilder(
-		contract = contract_address,
-		function = "get_cluster_models_for_aggregation",
-		call_arguments = [cluster_index, round_index],
-		caller = Address.from_bech32(caller_user_addr)
-	)
-	query = builder.build()
-	print(f'>>>Performing immutable query to get_cluster_models_for_aggregation...')
-	response = network_provider.query_contract(query).to_dictionary()
-	print(response)
-	return_code = response['returnCode']
-	if return_code != 'ok':
-		print('Error in the response')
-		return None
-	return_data = response['returnData']
-	output_type = 'List<array46<u8>>'
-	return_data = return_data[0]
-	decode_method = base64_string_to_ipfs_addresses
-	decoded_response = decode_method(return_data)
-	print(decoded_response)
-	return decoded_response
-
-
 def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
@@ -381,11 +357,35 @@ def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	return decoded_response
 
 
-def query_get_node_dataset(global_node_index, caller_user_addr = CALLER_USER_ADDR):
+def query_get_candidate_models_for_aggregation(cluster_index, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_candidate_models_for_aggregation",
+		call_arguments = [cluster_index],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_candidate_models_for_aggregation...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'List<array46<u8>>'
+	return_data = return_data[0]
+	decode_method = base64_string_to_ipfs_addresses
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+	return decoded_response
+
+
+def query_get_node_dataset(global_node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
 		function = "get_node_dataset",
-		call_arguments = [global_node_index],
+		call_arguments = [global_node_index, cluster_index],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
@@ -765,10 +765,11 @@ def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	return decoded_response
 
 
-def mutate_upload_dataset_file(file_location, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
+		cluster_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
@@ -778,7 +779,7 @@ def mutate_upload_dataset_file(file_location, global_node_index, wallet_path = W
 		contract=contract_address,
 		function="upload_dataset_file",
 		gas_limit=60000000,
-		arguments=[file_location, global_node_index]
+		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -891,10 +892,11 @@ def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WA
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_dataset_file(file_location, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
+		cluster_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
@@ -904,7 +906,7 @@ def mutate_clear_dataset_file(file_location, global_node_index, wallet_path = WA
 		contract=contract_address,
 		function="clear_dataset_file",
 		gas_limit=60000000,
-		arguments=[file_location, global_node_index]
+		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()

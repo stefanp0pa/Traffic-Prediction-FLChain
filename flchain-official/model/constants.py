@@ -26,4 +26,5 @@ missing_value = 0.0
 server_start_port = 5000
 rounds = 2
 model_save_directory = 'models_node'
+model_aggregated = 'modesl_aggregated'
 
