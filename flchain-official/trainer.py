@@ -5,12 +5,12 @@ import pika
 import json
 import numpy as np
 from utils.rabbitmq import init_rabbit
-from utils.utils import extract_file
+from utils.utils import extract_file, upload_file
 from utils.model import create_model_from_hash
 from model.client import Client
 import torch
 import os
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data, mutate_upload_footprint_model_file
 
 torch.cuda.device_count()
 torch.cuda.is_available()
@@ -22,10 +22,6 @@ print("CUDA:", USE_CUDA, DEVICE)
 trainer_id = int(sys.argv[1])
 WORKER_NAME = generate_random_string(10)
 
-# query_get_all_clusters_per_node(112)
-# query_get_cluster_adjacency_matrix(8)
-# query_get_cluster_aggregation(1, 0)
-# query_get_training_data(112, 1)
 def train_model():
     print("Incepe antrenamentul bobita")
     clusters = query_get_all_clusters_per_node(trainer_id)
@@ -39,11 +35,14 @@ def train_model():
     
         body = json.loads(json.dumps(response))
         unhash_data = create_model_from_hash(body)
-        client = Client(trainer_id, unhash_data['cluster_index'], unhash_data['matrix']['matrix'] ,unhash_data['dataset'],DEVICE)
+        client = Client(trainer_id, cluster, unhash_data['cluster_index'], unhash_data['matrix']['matrix'] ,unhash_data['dataset'],DEVICE)
         del unhash_data['my_model']['node_index']
         del unhash_data['my_model']['cluster_index']
         client.load_model(unhash_data['my_model'], unhash_data['cluster_model'])
         client.train()
+        model_save_path = client.get_last_model_file()
+        file_hash = upload_file(model_save_path)
+        mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster_index())
 
 
 def stage_callback(ch, method, properties, body):

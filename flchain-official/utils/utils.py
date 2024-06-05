@@ -2,12 +2,22 @@ import random
 import string
 import requests
 import numpy as np
+import os
 from scipy.sparse.linalg import eigs
 
 def generate_random_string(length):
     characters = string.ascii_letters + string.digits
     random_string = ''.join(random.choice(characters) for _ in range(length))
     return random_string
+
+
+def upload_file(filepath):
+    IPFS_API_URL = 'http://localhost:5001/api/v0'
+    files = {'file': open(filepath, 'rb')}
+    response = requests.post(f'{IPFS_API_URL}/add', files=files)
+    ipfs_hash = response.json()['Hash']
+    return ipfs_hash
+
 
 def extract_file(ipfs_hash, file_path):
     IPFS_API_URL = 'http://localhost:8080/ipfs/'
@@ -20,6 +30,10 @@ def extract_file(ipfs_hash, file_path):
         print('Failed to download the file')
         return None
 
+
+def create_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 def scaled_Laplacian(W):
     # L = D-W

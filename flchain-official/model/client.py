@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 from model.GCN import GCN
 from datetime import datetime
-from utils.utils import scaled_Laplacian, cheb_polynomial
+from utils.utils import scaled_Laplacian, cheb_polynomial, create_directory
 import copy
 
 def create_dataloaders(field, target, data, DEVICE, shuffle=False):
@@ -20,10 +20,11 @@ def create_dataloaders(field, target, data, DEVICE, shuffle=False):
 
 class Client:
 
-    def __init__(self, node, cluster_index, adj_matrix, data, DEVICE) -> None:
+    def __init__(self, node, cluster, cluster_index, adj_matrix, data, DEVICE) -> None:
         self.__node = node
         self.__adj_matrix = adj_matrix
         self.DEVICE = DEVICE
+        self.cluster = cluster
         self.cluster_index = cluster_index
         self.__train_loader, self.__train_target_tensor =  create_dataloaders('train_x', 'train_target', data, DEVICE)
         self.__test_loader, self.__test_target_tensor = create_dataloaders('test_x', 'test_target', data, DEVICE)
@@ -91,14 +92,9 @@ class Client:
             training_loss = 0
             for batch_index, batch_data in enumerate(self.__train_loader):
                 encoder_inputs, labels = batch_data
-                encoder_inputs = encoder_inputs[:, :, [0,2], :]
-                # print(encoder_inputs.shape)
-                # encoder_inputs = encoder_inputs.unsqueeze(1)
+                encoder_inputs = encoder_inputs.unsqueeze(1)
                 optimizer.zero_grad()
                 outputs = self.model(encoder_inputs)
-                print(outputs.shape)
-                outputs = outputs[:, self.cluster_index]
-                print(labels.shape)
                 loss = self.criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
@@ -111,15 +107,20 @@ class Client:
 
             print(f"Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}")
         
-        # save_path = f"{constants.model_save_directory}/{self.__node}_{self.__server_port}"
-        # create_directory(save_path)
-        # now = datetime.now()
-        # timestamp = now.timestamp()
-        # torch.save(self.best_model.state_dict(), f"{save_path}/{timestamp}")
+        save_directory = f"{constants.model_save_directory}/{self.__node}_{self.cluster}"
+        create_directory(save_directory)
+        now = datetime.now()
+        timestamp = now.timestamp()
+        self.save_path = f"{save_directory}/{timestamp}.pth"
+        torch.save(self.best_model.state_dict(), self.save_path)
         
 
     def get_node(self):
         return self.__node
+
+
+    def get_cluster_index(self):
+        return self.cluster_index
 
 
     def send_current_model(self):
@@ -130,7 +131,7 @@ class Client:
                 param[layer] = copy.deepcopy(current_model[layer])
 
         return param
+    
 
-
-    def get_server_port(self):
-        return self.__server_port
+    def get_last_model_file(self):
+        return self.save_path
