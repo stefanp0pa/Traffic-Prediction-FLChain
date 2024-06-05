@@ -10,10 +10,10 @@ SC_ADDR = 'erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z'
 CALLER_ADDR = 'erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz'
 WALLET_PATH = '/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem'
 
-ADJ_MATRICES_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/adj_matrices_ipfs_addr.txt'
-DATASET_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/nodes_dataset_ipfs_addr.txt'
-AGGR_MODELS_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/cluster_models_ipfs_addr.txt'
-FOOTPRINT_MODELS_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/nodes_footprints_ipfs_addr.txt'
+ADJ_MATRICES_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/adj_matrices_ipfs_addr.txt' # 22
+DATASET_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/nodes_dataset_ipfs_addr.txt' # 206
+AGGR_MODELS_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/cluster_models_ipfs_addr.txt' # 22
+FOOTPRINT_MODELS_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/nodes_footprints_ipfs_addr.txt' # 206
 CLUSTER_DESC_FILE = '/Users/stefan/Traffic-Prediction-FLChain/seed-traffic-data/cluster_descriptions.txt'
 
 def seed_adj_matrices_files():
@@ -138,3 +138,5 @@ if curr_round != 0:
 # seed_aggregation_cluster_model_files()
 # seed_footprint_model_files()
 # seed_cluster_descriptions()
+
+# 456 total files = 22 + 22 + 206 + 206

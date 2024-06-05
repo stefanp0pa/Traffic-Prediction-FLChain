@@ -30,6 +30,12 @@ pub struct ClusterNode {
 }
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, ManagedVecItem)]
+pub struct NodeCluster {
+    node_index: u16,
+    cluster_index: u16,
+}
+
+#[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, ManagedVecItem)]
 pub struct TrainingData {
     cluster_adj_matrix_addr: [u8; 46],
     dataset_addr: [u8; 46],
@@ -57,6 +63,8 @@ pub struct Evaluation<M: ManagedTypeApi> {
     status: EvaluationStatus,
 }
 
+const DEFAULT_NODE: u16 = 9999u16;
+
 #[multiversx_sc::contract]
 pub trait Trafficflchain {
     #[init]
@@ -73,7 +81,7 @@ pub trait Trafficflchain {
     fn upgrade(&self) {}
 
     // Data ------------------------------------------------------------------
-    fn upload_file(&self, file_location: [u8; 46], file_type: FileType, author_addr: ManagedAddress) {
+    fn upload_file(&self, file_location: [u8; 46], file_type: FileType, author_addr: ManagedAddress, node_index: u16, cluster_index: u16) {
         if self.file_locations().contains(&file_location) {
             sc_panic!("File already exists!");
         }
@@ -85,6 +93,7 @@ pub trait Trafficflchain {
             self.author_files(author_addr.clone()).insert(file_location.clone());
             self.file_authors(file_location.clone()).set(author_addr.clone());
             self.round_files(round).insert(file_location.clone());
+            self.files_nodes_cluster(file_location.clone()).set(NodeCluster { node_index, cluster_index });
             self.files_count().update(|count| { *count += 1 });
             self.upload_file_event(file_location, file_type, round, author_addr);
         }
@@ -104,6 +113,7 @@ pub trait Trafficflchain {
             self.file_authors(file_location.clone()).clear();
             self.round_files(round).swap_remove(&file_location.clone());
             self.file_evaluations(file_location.clone()).clear();
+            self.files_nodes_cluster(file_location.clone()).clear();
             self.files_count().update(|count| { *count -= 1 });
             self.clear_file_event(file_location, file.file_type, round, file_author);
         }
@@ -114,7 +124,7 @@ pub trait Trafficflchain {
     #[endpoint]
     fn upload_dataset_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
-        self.upload_file(file_location, FileType::Dataset, author_addr);
+        self.upload_file(file_location, FileType::Dataset, author_addr, global_node_index, cluster_index);
         self.node_datasets(global_node_index, cluster_index).set(file_location.clone());
     }
 
@@ -125,7 +135,7 @@ pub trait Trafficflchain {
     fn upload_candidate_model_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
-        self.upload_file(file_location, FileType::CandidateModel, author_addr);
+        self.upload_file(file_location, FileType::CandidateModel, author_addr, DEFAULT_NODE, cluster_index);
         self.candidate_models(cluster_index, round).insert(file_location);
     }
 
@@ -134,7 +144,7 @@ pub trait Trafficflchain {
     fn upload_footprint_model_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
-        self.upload_file(file_location, FileType::FootprintModel, author_addr);
+        self.upload_file(file_location, FileType::FootprintModel, author_addr, global_node_index, cluster_index, );
         self.footprint_models(global_node_index, cluster_index, round).set(file_location);
     }
 
@@ -145,7 +155,7 @@ pub trait Trafficflchain {
         // TODO: make sure that the aggregation file has metadata related to the candidate files that contributed to this model
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
-        self.upload_file(file_location, FileType::ClusterAggregationModel, author_addr);
+        self.upload_file(file_location, FileType::ClusterAggregationModel, author_addr, DEFAULT_NODE, cluster_index);
         self.aggregation_models(cluster_index, round).set(file_location);
     }
 
@@ -153,7 +163,7 @@ pub trait Trafficflchain {
     #[endpoint]
     fn upload_adj_matrix_file(&self, file_location: [u8; 46], cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
-        self.upload_file(file_location, FileType::ClusterStructure, author_addr);
+        self.upload_file(file_location, FileType::ClusterStructure, author_addr, DEFAULT_NODE, cluster_index);
         self.cluster_adj_matrices(cluster_index).set(file_location);
     }
 
@@ -187,7 +197,32 @@ pub trait Trafficflchain {
         self.cluster_adj_matrices(cluster_index).clear();
     }
 
-
+    #[endpoint]
+    fn clear_all_round_files(&self, round: usize) {
+        let mut output: ManagedVec<File> = ManagedVec::new();
+        for file in self.round_files(round).iter() {
+            output.push(self.files(file.clone()).get());
+        }
+        for file in output.iter() {
+            let file = self.files(file.file_location).get();
+            if self.files_nodes_cluster(file.file_location).is_empty(){
+                sc_panic!("File does not exist!");
+            }
+            if self.files_nodes_cluster(file.file_location).is_empty() {
+                sc_panic!("File cluster node does not exist!");
+            }
+            let file_node_cluster = self.files_nodes_cluster(file.file_location).get();
+            let node_index = file_node_cluster.node_index;
+            let cluster_index = file_node_cluster.cluster_index;
+            if file.file_type == FileType::FootprintModel {
+                self.clear_footprint_model_file(file.file_location, node_index, cluster_index, round);
+            } else if file.file_type == FileType::CandidateModel {
+                self.clear_candidate_model_file(file.file_location, cluster_index, round);
+            } else if file.file_type == FileType::ClusterAggregationModel {
+                self.clear_cluster_aggregation_file(file.file_location, cluster_index, round);
+            }
+        }
+    }
 
     // Cluster nodes description =============================================
     // There is a many-to-many relationship between clusters and nodes
@@ -480,6 +515,10 @@ pub trait Trafficflchain {
     #[view(get_file_author)]
     #[storage_mapper("file_authors")]
     fn file_authors(&self, file_location: [u8; 46]) -> SingleValueMapper<ManagedAddress>;
+
+    #[view(get_file_cluster_node)]
+    #[storage_mapper("files_cluster_nodes")]
+    fn files_nodes_cluster(&self, file_location: [u8; 46]) -> SingleValueMapper<NodeCluster>;
 
     #[storage_mapper("round_files")]
     fn round_files(&self, round: usize) -> UnorderedSetMapper<[u8; 46]>;

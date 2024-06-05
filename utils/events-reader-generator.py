@@ -1,7 +1,10 @@
 import json
 
-ABI_SOURCE  = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
-CLIENT_DEST = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py'
+# ABI_SOURCE  = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json' # ROBERT
+# CLIENT_DEST = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py' # ROBERT
+
+ABI_SOURCE = '/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
+CLIENT_DEST = '/Users/stefan/Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py'
 
 EVENTS_SECTION = 'events'
 IGNORED_EVENTS = ['SCUpgrade', 'writeLog', 'completedTxEvent', 'signalError', 'internalVMErrors']
@@ -30,7 +33,8 @@ def read_abi_file(file_path = ABI_SOURCE):
         print(f"Error decoding JSON from the file {file_path}.")
         exit(1)
 
-def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
+# def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
+def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
     try:
         with open(file_path, 'r') as file:
             data = file.read()

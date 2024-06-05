@@ -181,3 +181,13 @@ def base64_string_to_list_cluster_node(encoded_string):
             'local_node_index': hex_string_to_numeric(decoded_bytes[i + 4:i + 8])
         })
     return cluster_nodes
+
+def base64_string_to_node_cluser(encoded_string):
+    if not encoded_string:
+        return 0
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    decoded_response = {
+        'global_node_index': hex_string_to_numeric(decoded_bytes[:4]),
+        'cluster_index': hex_string_to_numeric(decoded_bytes[4:])
+    }
+    return decoded_response

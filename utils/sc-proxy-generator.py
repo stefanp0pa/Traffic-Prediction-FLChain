@@ -10,11 +10,14 @@ CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
 GAS_LIMIT = 60000000
-ABI_SOURCE  = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
+ABI_SOURCE = "/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json" # STEFAN
+# ABI_SOURCE  = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json" # ROBERT
 CLIENT_DEST = args.dest
 # CLIENT_DEST = f"/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py" # TODO
-CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
-WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
+CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz" # STEFAN
+WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem" # STEFAN
+# CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu" # ROBERT
+# WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem" # ROBERT
 
 ENDPOINTS_SECTION = "endpoints"
 TYPES_SECTION = "types"
@@ -66,7 +69,8 @@ def insert_constants(file_handler):
     # self.nonce_holder = AccountNonceHolder(self.network_provider.get_account(self.user_addr).nonce)
 
 
-def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
+# def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
+def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
     try:
         with open(file_path, 'r') as file:
             data = file.read()
@@ -108,6 +112,8 @@ def choose_decode_method(param_type):
         return 'base64_string_to_ipfs_address'
     elif param_type == "List<ClusterNode>":
         return 'base64_string_to_list_cluster_node'
+    elif param_type == "NodeCluster":
+        return 'base64_string_to_node_cluser'
     else:
         return 'base64_string_to_numeric'
 
