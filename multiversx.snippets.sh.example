@@ -2,7 +2,7 @@ GAS_LIMIT=60000000
 PROXY="https://devnet-gateway.multiversx.com" # "https://testnet-gateway.multiversx.com" for the testnet
 CHAIN_ID="D" # T for testnet
 
-PROJECT_PATH="/Users/stefan/Traffic-Prediction-FLChain" # replace with your project path
+PROJECT_PATH="/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain" # replace with your project path
 WALLETS_DIR="wallets"
 MASTER_WALLET="$PROJECT_PATH/wallets/master.pem"
 DWARF_WALLET="$PROJECT_PATH/wallets/dwarf.pem"
@@ -11,13 +11,14 @@ SC_ADDR="erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 
 BYTECODE="$PROJECT_PATH/trafficflchain/output/trafficflchain.wasm"
 
-MASTER_ADDR="erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
+MASTER_ADDR="erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
 DWARF_ADDR="erd12zjr9k2wae68are9rmz7z6hphyestwgf6m6utuqdndgchc3vyvvs0g3zlg"
 
 build_contract() {
     mxpy contract build \
-        && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/sc-proxy-generator.py \
-        && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/events-reader-generator.py
+        && python3 /home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/sc-proxy-generator.py --dest=/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/devnet_sc_proxy_client.py \
+        && python3 /home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/sc-proxy-generator.py --dest=/home/robert/Desktop/Facultate/Licenta/Traffic-Prediction-FLChain/flchain-official/devnet_sc_proxy_trainer.py \
+        && python3 /home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/events-reader-generator.py
 }
 
 deploy_contract() {

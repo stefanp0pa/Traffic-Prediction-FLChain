@@ -198,8 +198,8 @@ SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
-CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
-WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem"
+CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
+WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
 GAS_LIMIT = 60000000
 
 transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)
@@ -1213,3 +1213,10 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
+# query_get_round()
+# query_get_all_round_files(0)
+# query_get_files_count()
+# mutate_set_round(1)
+# query_get_training_data(158, 1)
+mutate_test_event(5)
+# query_get_training_data(16, 20)

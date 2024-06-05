@@ -27,7 +27,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SC_ADDR = "erd1qqqqqqqqqqqqqpgqs80m9r27j5un8v3kpm7zzx2kmdsay53pmgyqpnh426"
-WALLET_DIR = "/Users/stefan/flchain-prototype/participants/evaluator/evaluator.pem"
+WALLET_DIR = "/home/robert/Desktop/Facultate/Licenta//flchain-prototype/participants/evaluator/evaluator.pem"
 EVALUATOR_ADDR = "erd19gpr46ga46wnv669mkspwwrwcuc8eegn7enlgg7dh9qcjyn86mus09j4k9"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 SC_CURRENT_GLOBAL="get_current_global_version"

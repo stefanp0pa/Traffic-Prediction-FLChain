@@ -1,11 +1,11 @@
 GAS_LIMIT=60000000
 PROXY="https://devnet-gateway.multiversx.com"
 CHAIN_ID="D"
-BYTECODE="/Users/stefan/ssi-proiect/contracts/flchain_dummy/output/flchain_dummy.wasm"
-PRIMUS_WALLET="/Users/stefan/ssi-proiect/contracts/wallets/primus_wallet.pem"
-SECUNDUS_WALLET="/Users/stefan/ssi-proiect/contracts/wallets/secundus_wallet.pem"
+BYTECODE="/home/robert/Desktop/Facultate/Licenta//ssi-proiect/contracts/flchain_dummy/output/flchain_dummy.wasm"
+PRIMUS_WALLET="/home/robert/Desktop/Facultate/Licenta//ssi-proiect/contracts/wallets/primus_wallet.pem"
+SECUNDUS_WALLET="/home/robert/Desktop/Facultate/Licenta//ssi-proiect/contracts/wallets/secundus_wallet.pem"
 
-WALLET_PEM="/Users/stefan/flchain-prototype/contracts/flchain_dummy/owner.pem"
+WALLET_PEM="/home/robert/Desktop/Facultate/Licenta//flchain-prototype/contracts/flchain_dummy/owner.pem"
 OWNER_ADDR="erd15pmfkdtwfhr6k35p0gp7g66zne77jaqdeymvwdz96tsxktskmgyqkmq4lm"
 INITIATOR_ADDR="erd1glmnq6c75uedla2dtlc58ll56lwak4jrvlw38pfr64h6p8933ezsaajxtk"
 TRAINER_ADDR="erd14qtljzk5ywhndnqtzfxdr2kd9dnzw6u5cttyvj3g2fc72fnh9wdsg8cqwy"
@@ -13,7 +13,7 @@ EVALUATOR_ADDR="erd19gpr46ga46wnv669mkspwwrwcuc8eegn7enlgg7dh9qcjyn86mus09j4k9"
 AGGREGATOR_ADDR="erd1u069qhqrkm4e03u4c6mtwgy0exyshjjrrg24hh70cgww9r3hmaus72t3zr"
 CONTRACT_ADDR="erd1qqqqqqqqqqqqqpgqs80m9r27j5un8v3kpm7zzx2kmdsay53pmgyqpnh426"
 
-WALLETS_DIR="/Users/stefan/ssi-proiect/contracts/flchain_dummy/wallets/"
+WALLETS_DIR="/home/robert/Desktop/Facultate/Licenta//ssi-proiect/contracts/flchain_dummy/wallets/"
 
 set_wallet() {
     WALLET_PEM=$1

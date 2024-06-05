@@ -30,7 +30,7 @@ round = 0
 trainer_id = sys.argv[1]
 
 SC_ADDR = "erd1qqqqqqqqqqqqqpgqs80m9r27j5un8v3kpm7zzx2kmdsay53pmgyqpnh426"
-WALLET_DIR = f"/Users/stefan/flchain-prototype/participants/trainer/trainer{trainer_id}.pem"
+WALLET_DIR = f"/home/robert/Desktop/Facultate/Licenta//flchain-prototype/participants/trainer/trainer{trainer_id}.pem"
 TRAINER_ADDR = "erd14qtljzk5ywhndnqtzfxdr2kd9dnzw6u5cttyvj3g2fc72fnh9wdsg8cqwy"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 SC_SIGNUP = "signup"

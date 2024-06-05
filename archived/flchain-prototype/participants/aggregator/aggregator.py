@@ -30,7 +30,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SC_ADDR = "erd1qqqqqqqqqqqqqpgqs80m9r27j5un8v3kpm7zzx2kmdsay53pmgyqpnh426"
-WALLET_DIR = "/Users/stefan/flchain-prototype/participants/aggregator/aggregator.pem"
+WALLET_DIR = "/home/robert/Desktop/Facultate/Licenta//flchain-prototype/participants/aggregator/aggregator.pem"
 AGGR_ADDR = "erd1u069qhqrkm4e03u4c6mtwgy0exyshjjrrg24hh70cgww9r3hmaus72t3zr"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 SC_DOWNLOAD_LOCAL = "get_local_updates"

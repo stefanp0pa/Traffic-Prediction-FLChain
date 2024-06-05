@@ -1,14 +1,20 @@
 import json
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--dest', type=str, required=True, help='CLIENT DESTINATION')
+args = parser.parse_args()
 
 SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
 GAS_LIMIT = 60000000
-ABI_SOURCE  = "/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
-CLIENT_DEST = f"/Users/stefan/Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py"
-CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
-WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem"
+ABI_SOURCE  = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json"
+CLIENT_DEST = args.dest
+# CLIENT_DEST = f"/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py" # TODO
+CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
+WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
 
 ENDPOINTS_SECTION = "endpoints"
 TYPES_SECTION = "types"
@@ -60,7 +66,7 @@ def insert_constants(file_handler):
     # self.nonce_holder = AccountNonceHolder(self.network_provider.get_account(self.user_addr).nonce)
 
 
-def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
+def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
     try:
         with open(file_path, 'r') as file:
             data = file.read()
@@ -163,7 +169,8 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     file_handle.write("\treturn_data = return_data[0]\n")
     file_handle.write(f"\tdecode_method = {choose_decode_method(output_type)}\n")
     file_handle.write("\tdecoded_response = decode_method(return_data)\n")
-    file_handle.write("\tprint(decoded_response)\n\n")
+    file_handle.write("\tprint(decoded_response)\n")
+    file_handle.write("\treturn decoded_response\n\n\n")
 
 
 def generate_for_mutable_endpoint(file_handle, endpoint_data):

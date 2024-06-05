@@ -14,8 +14,9 @@ API_GATEWAY = 'https://devnet-api.multiversx.com'
 ACCOUNTS_PATH = 'accounts'
 TRANSACTIONS_PATH = 'transactions'
 
+
 SC_ADDR = 'erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue'
-SC_ABI_ADDR = '/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
+SC_ABI_ADDR = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
 
 TRANSFERS_PATH = 'transfers'
 TRANSFERS_COUNT_PATH = 'transfers/c'
