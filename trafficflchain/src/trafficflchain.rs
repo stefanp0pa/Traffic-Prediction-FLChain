@@ -142,6 +142,7 @@ pub trait Trafficflchain {
     // The aggregation file represents the new cluster model following a full training round
     #[endpoint]
     fn upload_cluster_aggregation_file(&self, file_location: [u8; 46], cluster_index: u16) {
+        // TODO: make sure that the aggregation file has metadata related to the candidate files that contributed to this model
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
         self.upload_file(file_location, FileType::ClusterAggregationModel, author_addr);
@@ -252,6 +253,7 @@ pub trait Trafficflchain {
     // - The dataset of the node X and cluster Y
     // - The aggregated model of the cluster Y from the previous round (this is the baseline model for the new round)
     // - The local index of the node X in the cluster Y
+    // (!) For this method to run, it is important that the round > 0, otherwise it will panic
     #[view]
     fn get_training_data(&self, global_node_index: u16, cluster_index: u16) -> TrainingData {
         let adj_matrix = self.cluster_adj_matrices(cluster_index).get();
@@ -262,7 +264,7 @@ pub trait Trafficflchain {
         if self.node_datasets(global_node_index, cluster_index).is_empty() {
             sc_panic!("Dataset does not exist!");
         }
-        let prev_round = self.round().get() - 1;
+        let prev_round = self.round().get() - 1; // this usually fails because we forget to set round > 0
         let prev_aggr_model = self.aggregation_models(cluster_index, prev_round).get();
         if self.aggregation_models(cluster_index, prev_round).is_empty() {
             sc_panic!("No previous aggregated model to use!");
@@ -353,20 +355,6 @@ pub trait Trafficflchain {
         }
     }
 
-
- 
-
-    
-    // This method should be used at the Aggregation stage, to get all the candidate models for the aggregation
-    #[view]
-    fn get_cluster_models_for_aggregation(&self, cluster_index: u16, round_index: usize) -> ManagedVec<[u8; 46]> {
-        let mut output: ManagedVec<[u8; 46]> = ManagedVec::new();
-        for model in self.candidate_models(cluster_index, round_index).iter() {
-            output.push(model);
-        }
-        output
-    }
-
     #[view]
     fn get_users_by_role(&self, role: Role) -> ManagedVec<ManagedAddress> {
         let mut output: ManagedVec<ManagedAddress> = ManagedVec::new();
@@ -389,27 +377,46 @@ pub trait Trafficflchain {
         self.reputation_updated_event(user_addr, reputation);
     }
 
-    // Rounds ----------------------------------------------------------------
+ 
+    // AGGREGATION ===========================================================
+    
+    // This method should be used at the Aggregation stage, to get all the candidate models for the aggregation on a cluster
+    #[view]
+    fn get_candidate_models_for_aggregation(&self, cluster_index: u16) -> ManagedVec<[u8; 46]> {
+        // TODO: could check here if the caller user has the Aggregator role
+        let mut output: ManagedVec<[u8; 46]> = ManagedVec::new();
+        let curr_round = self.round().get();
+        for model in self.candidate_models(cluster_index, curr_round).iter() {
+            // TODO: before adding the model to the output, check if it has been evaluated and its evaluation score
+            output.push(model);
+        }
+        output
+    }
+
+
+    // ROUNDS AND STAGES ----------------------------------------------------
     #[endpoint]
     fn next_round(&self) {
+        // TODO: the caller should be checked before executing this method
         self.round().update(|round| { *round += 1 });
         self.set_round_event(self.round().get());
     }
 
     #[endpoint]
     fn set_round(&self, round: usize) {
+        // TODO: the caller should be checked before executing this method
         self.round().set(round);
         self.set_round_event(round);
     }
 
-    // Stages ----------------------------------------------------------------
     #[endpoint]
     fn set_stage(&self, stage: Stage) {
+        // TODO: the caller should be checked before executing this method
         self.stage().set(stage);
         self.set_stage_event(stage);
     }
 
-    // Storage mappers -------------------------------------------------------
+    // STORAGE MAPPERS -------------------------------------------------------
 
     // the IPFS address of the dataset for each node
     #[view(get_node_dataset)]
@@ -501,7 +508,7 @@ pub trait Trafficflchain {
     #[storage_mapper("stage")]
     fn stage(&self) -> SingleValueMapper<Stage>;
 
-    // Events ----------------------------------------------------------------
+    // EVENTS ----------------------------------------------------------------
 
     // This method is used for testing purposes only, to simulate the occurrence of an event
     #[endpoint]

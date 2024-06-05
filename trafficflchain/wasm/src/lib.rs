@@ -41,9 +41,9 @@ multiversx_sc_wasm_adapter::endpoints! {
         get_file_evaluations => get_file_evaluations
         signup_user => signup_user
         clear_user => clear_user
-        get_cluster_models_for_aggregation => get_cluster_models_for_aggregation
         get_users_by_role => get_users_by_role
         update_reputation => update_reputation
+        get_candidate_models_for_aggregation => get_candidate_models_for_aggregation
         next_round => next_round
         set_round => set_round
         set_stage => set_stage
