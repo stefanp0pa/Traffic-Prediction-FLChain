@@ -3,9 +3,22 @@ Content-Type: application/json
 
 {
   "scAddress": "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue",
-  "funcName": "get_all_round_files",
-  "args": [0]
+  "funcName": "get_stage"
 }
+
+POST https://devnet-gateway.multiversx.com/transaction/cost HTTP/1.1
+Content-Type: application/json
+
+{
+    "receiver": "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue",
+    "sender": "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz",
+    "data": "BQ==",
+    "funcName": "test_event",
+    "chainID": "1",
+    "version": 1,
+    "nonce": 3933
+}
+
 
 # 300 billion - 299997371730 = 262628270
 

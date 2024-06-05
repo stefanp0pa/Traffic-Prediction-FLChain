@@ -323,28 +323,6 @@ def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADD
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
-def query_get_cluster_models_for_aggregation(cluster_index, round_index, caller_user_addr = CALLER_USER_ADDR):
-	builder = ContractQueryBuilder(
-		contract = contract_address,
-		function = "get_cluster_models_for_aggregation",
-		call_arguments = [cluster_index, round_index],
-		caller = Address.from_bech32(caller_user_addr)
-	)
-	query = builder.build()
-	print(f'>>>Performing immutable query to get_cluster_models_for_aggregation...')
-	response = network_provider.query_contract(query).to_dictionary()
-	print(response)
-	return_code = response['returnCode']
-	if return_code != 'ok':
-		print('Error in the response')
-		return None
-	return_data = response['returnData']
-	output_type = 'List<array46<u8>>'
-	return_data = return_data[0]
-	decode_method = base64_string_to_ipfs_addresses
-	decoded_response = decode_method(return_data)
-	print(decoded_response)
-
 def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
@@ -364,6 +342,28 @@ def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	output_type = 'List<Address>'
 	return_data = return_data[0]
 	decode_method = base64_string_to_array_of_bech32_addresses
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+
+def query_get_candidate_models_for_aggregation(cluster_index, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_candidate_models_for_aggregation",
+		call_arguments = [cluster_index],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_candidate_models_for_aggregation...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'List<array46<u8>>'
+	return_data = return_data[0]
+	decode_method = base64_string_to_ipfs_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 
@@ -1212,11 +1212,3 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	print(f'>>>Performing mutable call to test_event...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-
-# query_get_round()
-# query_get_all_round_files(0)
-# query_get_files_count()
-# mutate_set_round(1)
-# query_get_training_data(158, 1)
-mutate_test_event(5)
-# query_get_training_data(16, 20)

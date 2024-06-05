@@ -359,25 +359,6 @@
             "outputs": []
         },
         {
-            "name": "get_cluster_models_for_aggregation",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "cluster_index",
-                    "type": "u16"
-                },
-                {
-                    "name": "round_index",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "List<array46<u8>>"
-                }
-            ]
-        },
-        {
             "name": "get_users_by_role",
             "mutability": "readonly",
             "inputs": [
@@ -406,6 +387,21 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "get_candidate_models_for_aggregation",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<array46<u8>>"
+                }
+            ]
         },
         {
             "name": "next_round",
