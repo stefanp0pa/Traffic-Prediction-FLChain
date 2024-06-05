@@ -1,3 +1,4 @@
 venv/
 dataset/
 sc-version.txt
+utils/__pycache__/

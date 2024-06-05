@@ -127,14 +127,14 @@ def seed_cluster_descriptions():
         print(f"An error occurred: {e}")
 
 print(f">>> Starting the seeding process for SC: {SC_ADDR}...")
-# curr_round = query_get_round(CALLER_ADDR)
-# if curr_round != 0:
-#     mutate_set_round(0, WALLET_PATH, CALLER_ADDR)
-#     print(f"Resetting round to 0 for SC: {SC_ADDR}")
-#     time.sleep(12)
+curr_round = query_get_round(CALLER_ADDR)
+if curr_round != 0:
+    mutate_set_round(0, WALLET_PATH, CALLER_ADDR)
+    print(f"Resetting round to 0 for SC: {SC_ADDR}")
+    time.sleep(12)
     
 # seed_adj_matrices_files()
 # seed_dataset_files()
 # seed_aggregation_cluster_model_files()
 # seed_footprint_model_files()
-seed_cluster_descriptions()
+# seed_cluster_descriptions()
