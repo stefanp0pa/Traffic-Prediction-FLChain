@@ -194,6 +194,19 @@ def base64_string_to_node_cluser(encoded_string):
     }
     return decoded_response
 
+def base64_string_to_list_evaluations(encoded_string):
+    if not encoded_string:
+        return []
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    evaluation_size = 66 # 64 bytes + 2 bytes
+    evaluations = []
+    for i in range(0, len(decoded_bytes), evaluation_size):
+        evaluations.append({
+            'evaluator': hex_string_to_bech32_address(decoded_bytes[i:i + 64]),
+            'evaluation': hex_string_to_numeric(decoded_bytes[i + 64:i + 66])
+        })
+    return evaluations
+
 from pathlib import Path
 from multiversx_sdk import TokenComputer
 from multiversx_sdk import SmartContractTransactionsFactory
@@ -319,15 +332,15 @@ def query_get_training_data(global_node_index, cluster_index, caller_user_addr =
 	return decoded_response
 
 
-def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADDR):
+def query_get_all_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
-		function = "get_file_evaluations",
+		function = "get_all_file_evaluations",
 		call_arguments = [file_location],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
-	print(f'>>>Performing immutable query to get_file_evaluations...')
+	print(f'>>>Performing immutable query to get_all_file_evaluations...')
 	response = network_provider.query_contract(query).to_dictionary()
 	print(response)
 	return_code = response['returnCode']
@@ -337,7 +350,7 @@ def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADD
 	return_data = response['returnData']
 	output_type = 'List<Evaluation>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_numeric
+	decode_method = base64_string_to_list_evaluations
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 	return decoded_response
@@ -463,11 +476,11 @@ def query_get_cluster_aggregation_model(cluster_index, round, caller_user_addr =
 	return decoded_response
 
 
-def query_get_candidate_model(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
+def query_get_candidate_model(global_node_index, cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
 		contract = contract_address,
 		function = "get_candidate_model",
-		call_arguments = [cluster_index, round],
+		call_arguments = [global_node_index, cluster_index, round],
 		caller = Address.from_bech32(caller_user_addr)
 	)
 	query = builder.build()
@@ -479,9 +492,9 @@ def query_get_candidate_model(cluster_index, round, caller_user_addr = CALLER_US
 		print('Error in the response')
 		return None
 	return_data = response['returnData']
-	output_type = 'variadic<array46<u8>>'
+	output_type = 'array46<u8>'
 	return_data = return_data[0]
-	decode_method = base64_string_to_ipfs_addresses
+	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
 	return decoded_response
@@ -825,9 +838,10 @@ def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_candidate_model_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_candidate_model_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
+		global_node_index - u16
 		cluster_index - u16
 	"""
 	signer = UserSigner.from_pem_file(Path(wallet_path))
@@ -838,7 +852,7 @@ def mutate_upload_candidate_model_file(file_location, cluster_index, wallet_path
 		contract=contract_address,
 		function="upload_candidate_model_file",
 		gas_limit=60000000,
-		arguments=[file_location, cluster_index]
+		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -1005,9 +1019,10 @@ def mutate_clear_footprint_model_file(file_location, global_node_index, cluster_
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_candidate_model_file(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_candidate_model_file(file_location, global_node_index, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		file_location - array46<u8>
+		global_node_index - u16
 		cluster_index - u16
 		round - u32
 	"""
@@ -1019,7 +1034,7 @@ def mutate_clear_candidate_model_file(file_location, cluster_index, round, walle
 		contract=contract_address,
 		function="clear_candidate_model_file",
 		gas_limit=60000000,
-		arguments=[file_location, cluster_index, round]
+		arguments=[file_location, global_node_index, cluster_index, round]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
 	gateway_nonce = nonce_holder.get_nonce_then_increment()
@@ -1316,3 +1331,4 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	print(f'>>>Performing mutable call to test_event...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
+

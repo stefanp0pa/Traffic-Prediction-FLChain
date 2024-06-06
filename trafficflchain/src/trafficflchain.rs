@@ -95,11 +95,11 @@ pub trait Trafficflchain {
             self.round_files(round).insert(file_location.clone());
             self.files_nodes_cluster(file_location.clone()).set(NodeCluster { node_index, cluster_index });
             self.files_count().update(|count| { *count += 1 });
-            self.upload_file_event(file_location, file_type, round, author_addr);
+            self.upload_file_event(file_location, file_type, round, node_index, cluster_index, author_addr);
         }
     }
 
-    fn clear_file(&self, file_location: [u8; 46]) {
+    fn clear_file(&self, file_location: [u8; 46], node_index: u16, cluster_index: u16) {
         if !self.file_locations().contains(&file_location) {
             sc_panic!("File does not exist!");
         }
@@ -115,7 +115,7 @@ pub trait Trafficflchain {
             self.file_evaluations(file_location.clone()).clear();
             self.files_nodes_cluster(file_location.clone()).clear();
             self.files_count().update(|count| { *count -= 1 });
-            self.clear_file_event(file_location, file.file_type, round, file_author);
+            self.clear_file_event(file_location, file.file_type, round, node_index, cluster_index, file_author);
         }
     }
 
@@ -132,11 +132,11 @@ pub trait Trafficflchain {
     // The trainer uploads the model file for a specific cluster and awaits evaluation
     // Later, based on the evaluation score, the model may be considered in the Aggregation stage
     #[endpoint]
-    fn upload_candidate_model_file(&self, file_location: [u8; 46], cluster_index: u16) {
+    fn upload_candidate_model_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
-        self.upload_file(file_location, FileType::CandidateModel, author_addr, DEFAULT_NODE, cluster_index);
-        self.candidate_models(cluster_index, round).insert(file_location);
+        self.upload_file(file_location, FileType::CandidateModel, author_addr, global_node_index, cluster_index);
+        self.candidate_models(global_node_index, cluster_index, round);
     }
 
     // This method should be used in the Seeding stage and at the end of each Training stage
@@ -169,31 +169,31 @@ pub trait Trafficflchain {
 
     #[endpoint]
     fn clear_dataset_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16) {
-        self.clear_file(file_location);
+        self.clear_file(file_location, global_node_index, cluster_index);
         self.node_datasets(global_node_index, cluster_index).clear();
     }
 
     #[endpoint]
     fn clear_cluster_aggregation_file(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
-        self.clear_file(file_location);
+        self.clear_file(file_location, DEFAULT_NODE, cluster_index);
         self.aggregation_models(cluster_index, round).clear();
     }
 
     #[endpoint]
     fn clear_footprint_model_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16, round: usize) {
-        self.clear_file(file_location);
+        self.clear_file(file_location, global_node_index, cluster_index);
         self.footprint_models(global_node_index, cluster_index, round).clear();
     }
 
     #[endpoint]
-    fn clear_candidate_model_file(&self, file_location: [u8; 46], cluster_index: u16, round: usize) {
-        self.clear_file(file_location);
-        self.candidate_models(cluster_index, round).swap_remove(&file_location);
+    fn clear_candidate_model_file(&self, file_location: [u8; 46], global_node_index: u16, cluster_index: u16, round: usize) {
+        self.clear_file(file_location, global_node_index, cluster_index);
+        self.candidate_models(global_node_index, cluster_index, round).clear();
     }
-    
+
     #[endpoint]
     fn clear_adj_matrix_file(&self, file_location: [u8; 46], cluster_index: u16) {
-        self.clear_file(file_location);
+        self.clear_file(file_location, DEFAULT_NODE, cluster_index);
         self.cluster_adj_matrices(cluster_index).clear();
     }
 
@@ -217,7 +217,7 @@ pub trait Trafficflchain {
             if file.file_type == FileType::FootprintModel {
                 self.clear_footprint_model_file(file.file_location, node_index, cluster_index, round);
             } else if file.file_type == FileType::CandidateModel {
-                self.clear_candidate_model_file(file.file_location, cluster_index, round);
+                self.clear_candidate_model_file(file.file_location, node_index, cluster_index, round);
             } else if file.file_type == FileType::ClusterAggregationModel {
                 self.clear_cluster_aggregation_file(file.file_location, cluster_index, round);
             }
@@ -337,7 +337,7 @@ pub trait Trafficflchain {
     }
 
     #[view]
-    fn get_file_evaluations(&self, file_location: [u8; 46]) -> ManagedVec<Evaluation<Self::Api>> {
+    fn get_all_file_evaluations(&self, file_location: [u8; 46]) -> ManagedVec<Evaluation<Self::Api>> {
         let mut output: ManagedVec<Evaluation<Self::Api>> = ManagedVec::new();
         for evaluation in self.file_evaluations(file_location.clone()).iter() {
             output.push(evaluation);
@@ -419,11 +419,17 @@ pub trait Trafficflchain {
     #[view]
     fn get_candidate_models_for_aggregation(&self, cluster_index: u16) -> ManagedVec<[u8; 46]> {
         // TODO: could check here if the caller user has the Aggregator role
-        let mut output: ManagedVec<[u8; 46]> = ManagedVec::new();
         let curr_round = self.round().get();
-        for model in self.candidate_models(cluster_index, curr_round).iter() {
-            // TODO: before adding the model to the output, check if it has been evaluated and its evaluation score
-            output.push(model);
+        let round_files = self.get_all_round_files(curr_round);
+        let mut output: ManagedVec<[u8; 46]> = ManagedVec::new();
+        for round_file in round_files.iter() {
+            if round_file.file_type == FileType::CandidateModel {
+                let node_cluster = self.files_nodes_cluster(round_file.file_location).get();
+                if node_cluster.cluster_index == cluster_index {
+                    // TODO: before adding the model to the output, check if it has been evaluated and its evaluation score
+                    output.push(round_file.file_location);
+                }
+            }
         }
         output
     }
@@ -477,7 +483,7 @@ pub trait Trafficflchain {
     // The IPFS address of the candidate model for each (node, cluster, round) tuple
     #[view(get_candidate_model)]
     #[storage_mapper("candidate_models")]
-    fn candidate_models(&self, cluster_index: u16, round: usize) -> UnorderedSetMapper<[u8; 46]>;
+    fn candidate_models(&self, global_node_index: u16, cluster_index: u16, round: usize) -> SingleValueMapper<[u8; 46]>;
 
     // The IPFS address of the footprint model for each (node, round) tuple
     #[view(get_footprint_model)]
@@ -561,6 +567,8 @@ pub trait Trafficflchain {
         let test_reputation = 656;
         let test_evaluation_status = EvaluationStatus::Positive;
         let test_file_location: [u8; 46] = "QmUPW6vbfbTW7LGDMy6QrzxLRHMkUBAdVAfTCQKUuQj999".as_bytes().try_into().unwrap();
+        let test_node_index: u16 = 7213u16;
+        let test_cluster_index: u16 = 1234u16;
 
         if event_type == 1 {
             self.signup_user_event(test_user_addr, test_stake, test_role);
@@ -578,10 +586,10 @@ pub trait Trafficflchain {
             self.set_stage_event(test_stage);
         }
         else if event_type == 6 {
-            self.upload_file_event(test_file_location, test_file_type, test_round, test_user_addr);
+            self.upload_file_event(test_file_location, test_file_type, test_round, test_node_index, test_cluster_index, test_user_addr);
         }
         else if event_type == 7 {
-            self.clear_file_event(test_file_location, test_file_type, test_round, test_user_addr);
+            self.clear_file_event(test_file_location, test_file_type, test_round, test_node_index, test_cluster_index, test_user_addr);
         }
         else if event_type == 8 {
             self.evaluate_file_event(test_file_location, test_evaluation_status, test_user_addr);
@@ -620,6 +628,8 @@ pub trait Trafficflchain {
         #[indexed] file_location: [u8; 46],
         #[indexed] file_type: FileType,
         #[indexed] round: usize,
+        #[indexed] node_index: u16,
+        #[indexed] cluster_index: u16,
         #[indexed] author_addr: ManagedAddress);
 
     #[event("clear_file_event")]
@@ -628,6 +638,8 @@ pub trait Trafficflchain {
         #[indexed] file_location: [u8; 46],
         #[indexed] file_type: FileType,
         #[indexed] round: usize,
+        #[indexed] node_index: u16,
+        #[indexed] cluster_index: u16,
         #[indexed] author_addr: ManagedAddress);
 
     #[event("evaluate_file_event")]

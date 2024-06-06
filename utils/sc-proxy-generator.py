@@ -114,6 +114,8 @@ def choose_decode_method(param_type):
         return 'base64_string_to_list_cluster_node'
     elif param_type == "NodeCluster":
         return 'base64_string_to_node_cluser'
+    elif param_type == "List<Evaluation>":
+        return 'base64_string_to_list_evaluations'
     else:
         return 'base64_string_to_numeric'
 
