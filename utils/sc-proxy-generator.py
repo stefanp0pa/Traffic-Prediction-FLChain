@@ -5,7 +5,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dest', type=str, required=True, help='CLIENT DESTINATION')
 args = parser.parse_args()
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
 CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
