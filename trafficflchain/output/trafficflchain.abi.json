@@ -65,6 +65,10 @@
                     "type": "array46<u8>"
                 },
                 {
+                    "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
                     "name": "cluster_index",
                     "type": "u16"
                 }
@@ -188,6 +192,10 @@
                 {
                     "name": "file_location",
                     "type": "array46<u8>"
+                },
+                {
+                    "name": "global_node_index",
+                    "type": "u16"
                 },
                 {
                     "name": "cluster_index",
@@ -340,7 +348,7 @@
             "outputs": []
         },
         {
-            "name": "get_file_evaluations",
+            "name": "get_all_file_evaluations",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -500,6 +508,10 @@
             "mutability": "readonly",
             "inputs": [
                 {
+                    "name": "global_node_index",
+                    "type": "u16"
+                },
+                {
                     "name": "cluster_index",
                     "type": "u16"
                 },
@@ -510,8 +522,7 @@
             ],
             "outputs": [
                 {
-                    "type": "variadic<array46<u8>>",
-                    "multi_result": true
+                    "type": "array46<u8>"
                 }
             ]
         },
@@ -770,6 +781,16 @@
                     "indexed": true
                 },
                 {
+                    "name": "node_index",
+                    "type": "u16",
+                    "indexed": true
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16",
+                    "indexed": true
+                },
+                {
                     "name": "author_addr",
                     "type": "Address",
                     "indexed": true
@@ -792,6 +813,16 @@
                 {
                     "name": "round",
                     "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "node_index",
+                    "type": "u16",
+                    "indexed": true
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16",
                     "indexed": true
                 },
                 {
@@ -995,20 +1026,24 @@
                     "discriminant": 3
                 },
                 {
-                    "name": "ModelAggregation",
+                    "name": "EvaluationCandidates",
                     "discriminant": 4
                 },
                 {
-                    "name": "Evaluation",
+                    "name": "ModelAggregation",
                     "discriminant": 5
                 },
                 {
-                    "name": "RewardsDistribution",
+                    "name": "EvaluationAggregation",
                     "discriminant": 6
                 },
                 {
-                    "name": "Finalization",
+                    "name": "RewardsDistribution",
                     "discriminant": 7
+                },
+                {
+                    "name": "Finalization",
+                    "discriminant": 8
                 }
             ]
         },

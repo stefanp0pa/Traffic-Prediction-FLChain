@@ -194,6 +194,19 @@ def base64_string_to_node_cluser(encoded_string):
     }
     return decoded_response
 
+def base64_string_to_list_evaluations(encoded_string):
+    if not encoded_string:
+        return []
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    evaluation_size = 66 # 64 bytes + 2 bytes
+    evaluations = []
+    for i in range(0, len(decoded_bytes), evaluation_size):
+        evaluations.append({
+            'evaluator': hex_string_to_bech32_address(decoded_bytes[i:i + 64]),
+            'evaluation': hex_string_to_numeric(decoded_bytes[i + 64:i + 66])
+        })
+    return evaluations
+
 def read_signup_user_event(payload):
 	event_name = base64_string_to_string(payload[0])
 	user_addr = base64_string_to_bech32_address(payload[1])
@@ -225,8 +238,10 @@ def read_upload_file_event(payload):
 	file_location = base64_string_to_ipfs_address(payload[1])
 	file_type = base64_string_to_numeric(payload[2])
 	round = base64_string_to_numeric(payload[3])
-	author_addr = base64_string_to_bech32_address(payload[4])
-	return json.dumps({'file_location': file_location, 'file_type': file_type, 'round': round, 'author_addr': author_addr, 'identifier': event_name})
+	node_index = base64_string_to_numeric(payload[4])
+	cluster_index = base64_string_to_numeric(payload[5])
+	author_addr = base64_string_to_bech32_address(payload[6])
+	return json.dumps({'file_location': file_location, 'file_type': file_type, 'round': round, 'node_index': node_index, 'cluster_index': cluster_index, 'author_addr': author_addr, 'identifier': event_name})
 
 
 def read_clear_file_event(payload):
@@ -234,8 +249,10 @@ def read_clear_file_event(payload):
 	file_location = base64_string_to_ipfs_address(payload[1])
 	file_type = base64_string_to_numeric(payload[2])
 	round = base64_string_to_numeric(payload[3])
-	author_addr = base64_string_to_bech32_address(payload[4])
-	return json.dumps({'file_location': file_location, 'file_type': file_type, 'round': round, 'author_addr': author_addr, 'identifier': event_name})
+	node_index = base64_string_to_numeric(payload[4])
+	cluster_index = base64_string_to_numeric(payload[5])
+	author_addr = base64_string_to_bech32_address(payload[6])
+	return json.dumps({'file_location': file_location, 'file_type': file_type, 'round': round, 'node_index': node_index, 'cluster_index': cluster_index, 'author_addr': author_addr, 'identifier': event_name})
 
 
 def read_evaluate_file_event(payload):

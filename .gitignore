@@ -17,3 +17,4 @@ flchain-official/utils/__pycache__/
 flchain-official/models_node
 flchain-official/modesl_aggregated
 FL/data_node
+.env

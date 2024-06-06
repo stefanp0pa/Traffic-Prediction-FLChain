@@ -1,10 +1,25 @@
 import json
+import argparse
+import os
+from dotenv import load_dotenv
 
-# ABI_SOURCE  = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json' # ROBERT
-# CLIENT_DEST = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py' # ROBERT
+load_dotenv()
+SC_ADDR = os.getenv("SC_ADDR")
+CHAIN_ID = os.getenv("CHAIN_ID")
+NETWORK_PROVIDER = os.getenv("NETWORK_PROVIDER")
+CHAIN_NAME = os.getenv("CHAIN_NAME")
+GAS_LIMIT = os.getenv("GAS_LIMIT")
+ABI_SOURCE = os.getenv("ABI_SOURCE")
+CALLER_USER_ADDR = os.getenv("CALLER_USER_ADDR")
+WALLET_PATH = os.getenv("WALLET_PATH")
+PROJECT_PATH = os.getenv("PROJECT_PATH")
 
-ABI_SOURCE = '/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
-CLIENT_DEST = '/Users/stefan/Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py'
+CONVERTS_PATH = os.path.join(PROJECT_PATH, "utils/converts.py")
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--dest', type=str, required=True, help='CLIENT DESTINATION')
+args = parser.parse_args()
+CLIENT_DEST = args.dest
 
 EVENTS_SECTION = 'events'
 IGNORED_EVENTS = ['SCUpgrade', 'writeLog', 'completedTxEvent', 'signalError', 'internalVMErrors']
@@ -33,8 +48,7 @@ def read_abi_file(file_path = ABI_SOURCE):
         print(f"Error decoding JSON from the file {file_path}.")
         exit(1)
 
-# def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
-def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
+def read_utils(file_path = CONVERTS_PATH):
     try:
         with open(file_path, 'r') as file:
             data = file.read()
@@ -76,6 +90,10 @@ def choose_decode_method(param_type):
         return 'base64_string_to_ipfs_address'
     elif param_type == "List<ClusterNode>":
         return 'base64_string_to_list_cluster_node'
+    elif param_type == "NodeCluster":
+        return 'base64_string_to_node_cluser'
+    elif param_type == "List<Evaluation>":
+        return 'base64_string_to_list_evaluations'
     else:
         return 'base64_string_to_numeric'
 

@@ -39,7 +39,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         get_all_round_files => get_all_round_files
         get_training_data => get_training_data
         evaluate_file => evaluate_file
-        get_file_evaluations => get_file_evaluations
+        get_all_file_evaluations => get_all_file_evaluations
         signup_user => signup_user
         clear_user => clear_user
         get_users_by_role => get_users_by_role
