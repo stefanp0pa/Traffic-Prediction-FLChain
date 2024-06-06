@@ -2,7 +2,7 @@ POST https://devnet-api.multiversx.com/query HTTP/1.1
 Content-Type: application/json
 
 {
-  "scAddress": "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue",
+  "scAddress": "erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z",
   "funcName": "get_stage"
 }
 
@@ -10,7 +10,7 @@ POST https://devnet-gateway.multiversx.com/transaction/cost HTTP/1.1
 Content-Type: application/json
 
 {
-    "receiver": "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue",
+    "receiver": "erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z",
     "sender": "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz",
     "data": "BQ==",
     "funcName": "test_event",

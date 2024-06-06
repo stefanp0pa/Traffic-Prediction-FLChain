@@ -3,6 +3,7 @@ import string
 import requests
 import numpy as np
 import os
+import torch
 from scipy.sparse.linalg import eigs
 
 def generate_random_string(length):
@@ -58,3 +59,13 @@ def cheb_polynomial(L_tilde, K):
         cheb_polynomials.append(2 * L_tilde * cheb_polynomials[i - 1] - cheb_polynomials[i - 2])
 
     return cheb_polynomials
+
+
+def get_device():
+    torch.cuda.device_count()
+    torch.cuda.is_available()
+    os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+    USE_CUDA = torch.cuda.is_available()
+    DEVICE = torch.device('cuda:0')
+    print("CUDA:", USE_CUDA, DEVICE)
+    return DEVICE

@@ -14,4 +14,6 @@ flchain-official/blockchain_seed/node_model_cluster
 flchain-official/matrix.npz
 flchain-events-processer/__pycache__
 flchain-official/utils/__pycache__/
+flchain-official/models_node
+flchain-official/modesl_aggregated
 FL/data_node

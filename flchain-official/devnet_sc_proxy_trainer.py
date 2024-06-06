@@ -194,7 +194,7 @@ from multiversx_sdk import ContractQueryBuilder
 from multiversx_sdk import ApiNetworkProvider
 from multiversx_sdk import AccountNonceHolder
 
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue"
+SC_ADDR = "erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
@@ -1258,4 +1258,3 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	print(f'>>>Performing mutable call to test_event...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-

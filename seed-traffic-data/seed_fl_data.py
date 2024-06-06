@@ -6,7 +6,7 @@ from devnet_sc_proxy_client import mutate_upload_cluster_description, mutate_cle
 from devnet_sc_proxy_client import mutate_upload_footprint_model_file, mutate_clear_footprint_model_file
 from devnet_sc_proxy_client import query_get_round, mutate_set_round
 
-SC_ADDR = 'erd1qqqqqqqqqqqqqpgqw22p5usg37ux2qmctevvy5677ql8ua22ch8q268sue'
+SC_ADDR = 'erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z'
 CALLER_ADDR = 'erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz'
 WALLET_PATH = '/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem'
 
