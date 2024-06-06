@@ -1,23 +1,25 @@
 import json
 import argparse
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+SC_ADDR = os.getenv("SC_ADDR")
+CHAIN_ID = os.getenv("CHAIN_ID")
+NETWORK_PROVIDER = os.getenv("NETWORK_PROVIDER")
+CHAIN_NAME = os.getenv("CHAIN_NAME")
+GAS_LIMIT = os.getenv("GAS_LIMIT")
+ABI_SOURCE = os.getenv("ABI_SOURCE")
+CALLER_USER_ADDR = os.getenv("CALLER_USER_ADDR")
+WALLET_PATH = os.getenv("WALLET_PATH")
+PROJECT_PATH = os.getenv("PROJECT_PATH")
+
+CONVERTS_PATH = os.path.join(PROJECT_PATH, "utils/converts.py")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dest', type=str, required=True, help='CLIENT DESTINATION')
 args = parser.parse_args()
-
-SC_ADDR = "erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z"
-CHAIN_ID = "D"
-NETWORK_PROVIDER = "https://devnet-api.multiversx.com" if CHAIN_ID == "D" else "https://testnet-api.multiversx.com"
-CHAIN_NAME = "devnet" if CHAIN_ID == "D" else "testnet"
-GAS_LIMIT = 60000000
-ABI_SOURCE = "/Users/stefan/Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json" # STEFAN
-# ABI_SOURCE  = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json" # ROBERT
 CLIENT_DEST = args.dest
-# CLIENT_DEST = f"/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/flchain-proxy/{CHAIN_NAME}_sc_proxy_client.py" # TODO
-CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz" # STEFAN
-WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem" # STEFAN
-# CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu" # ROBERT
-# WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem" # ROBERT
 
 ENDPOINTS_SECTION = "endpoints"
 TYPES_SECTION = "types"
@@ -64,13 +66,8 @@ def insert_constants(file_handler):
     file_handler.write("# The chain gateway is slower in updating the nonce, so we need\n")
     file_handler.write("# to keep track of it to avoid nonce desynchronization errors\n")
     file_handler.write("nonce_cache = {} \n\n")
-    # self.user_addr = Address.from_bech32(user_addr)
-    # self.signer = UserSigner.from_pem_file(Path(self.wallet_path))
-    # self.nonce_holder = AccountNonceHolder(self.network_provider.get_account(self.user_addr).nonce)
 
-
-# def read_utils(file_path = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/utils/converts.py"):
-def read_utils(file_path = "/Users/stefan/Traffic-Prediction-FLChain/utils/converts.py"):
+def read_utils(file_path = CONVERTS_PATH):
     try:
         with open(file_path, 'r') as file:
             data = file.read()

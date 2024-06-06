@@ -136,7 +136,7 @@ pub trait Trafficflchain {
         let author_addr = self.blockchain().get_caller();
         let round = self.round().get();
         self.upload_file(file_location, FileType::CandidateModel, author_addr, global_node_index, cluster_index);
-        self.candidate_models(global_node_index, cluster_index, round);
+        self.candidate_models(global_node_index, cluster_index, round).set(file_location);
     }
 
     // This method should be used in the Seeding stage and at the end of each Training stage

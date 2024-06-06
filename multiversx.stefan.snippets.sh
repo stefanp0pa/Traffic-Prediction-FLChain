@@ -18,7 +18,7 @@ build_contract() {
     mxpy contract build \
         && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/sc-proxy-generator.py --dest=/Users/stefan/Traffic-Prediction-FLChain/flchain-proxy/devnet_sc_proxy_client.py \
         && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/sc-proxy-generator.py --dest=/Users/stefan/Traffic-Prediction-FLChain/flchain-official/devnet_sc_proxy_trainer.py \
-        && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/events-reader-generator.py
+        && python3 /Users/stefan/Traffic-Prediction-FLChain/utils/events-reader-generator.py --dest=/Users/stefan/Traffic-Prediction-FLChain/flchain-events-processer/events_reader_client.py \
 }
 
 deploy_contract() {
