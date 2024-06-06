@@ -216,6 +216,17 @@
             "outputs": []
         },
         {
+            "name": "clear_all_round_files",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "round",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "upload_cluster_description",
             "mutability": "mutable",
             "inputs": [
@@ -603,6 +614,21 @@
             ]
         },
         {
+            "name": "get_file_cluster_node",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "file_location",
+                    "type": "array46<u8>"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "NodeCluster"
+                }
+            ]
+        },
+        {
             "name": "get_files_count",
             "mutability": "readonly",
             "inputs": [],
@@ -900,6 +926,19 @@
                 {
                     "name": "CandidateModel",
                     "discriminant": 5
+                }
+            ]
+        },
+        "NodeCluster": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "node_index",
+                    "type": "u16"
+                },
+                {
+                    "name": "cluster_index",
+                    "type": "u16"
                 }
             ]
         },

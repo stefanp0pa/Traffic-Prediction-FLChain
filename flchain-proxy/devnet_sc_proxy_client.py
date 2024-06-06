@@ -184,6 +184,16 @@ def base64_string_to_list_cluster_node(encoded_string):
         })
     return cluster_nodes
 
+def base64_string_to_node_cluser(encoded_string):
+    if not encoded_string:
+        return 0
+    decoded_bytes = base64_string_to_hex_string(encoded_string)
+    decoded_response = {
+        'global_node_index': hex_string_to_numeric(decoded_bytes[:4]),
+        'cluster_index': hex_string_to_numeric(decoded_bytes[4:])
+    }
+    return decoded_response
+
 from pathlib import Path
 from multiversx_sdk import TokenComputer
 from multiversx_sdk import SmartContractTransactionsFactory
@@ -198,8 +208,8 @@ SC_ADDR = "erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z"
 CHAIN_ID = "D"
 NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
-CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
-WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/wallets/master.pem"
+CALLER_USER_ADDR = "erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
+WALLET_PATH = "/Users/stefan/Traffic-Prediction-FLChain/wallets/master.pem"
 GAS_LIMIT = 60000000
 
 transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)
@@ -234,6 +244,8 @@ def query_get_all_clusters_per_node(node_global_index, caller_user_addr = CALLER
 	decode_method = base64_string_to_list_u16
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_all_nodes_per_cluster(cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -256,6 +268,8 @@ def query_get_all_nodes_per_cluster(cluster_index, caller_user_addr = CALLER_USE
 	decode_method = base64_string_to_list_cluster_node
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_all_round_files(round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -278,6 +292,8 @@ def query_get_all_round_files(round, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_file_array
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_training_data(global_node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -300,6 +316,8 @@ def query_get_training_data(global_node_index, cluster_index, caller_user_addr =
 	decode_method = base64_string_to_training_data
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -322,6 +340,8 @@ def query_get_file_evaluations(file_location, caller_user_addr = CALLER_USER_ADD
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -344,6 +364,8 @@ def query_get_users_by_role(role, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_array_of_bech32_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_candidate_models_for_aggregation(cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -366,6 +388,8 @@ def query_get_candidate_models_for_aggregation(cluster_index, caller_user_addr =
 	decode_method = base64_string_to_ipfs_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_node_dataset(global_node_index, cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -388,6 +412,8 @@ def query_get_node_dataset(global_node_index, cluster_index, caller_user_addr = 
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_cluster_adjacency_matrix(cluster_index, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -410,6 +436,8 @@ def query_get_cluster_adjacency_matrix(cluster_index, caller_user_addr = CALLER_
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_cluster_aggregation_model(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -432,6 +460,8 @@ def query_get_cluster_aggregation_model(cluster_index, round, caller_user_addr =
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_candidate_model(cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -454,6 +484,8 @@ def query_get_candidate_model(cluster_index, round, caller_user_addr = CALLER_US
 	decode_method = base64_string_to_ipfs_addresses
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_footprint_model(global_node_index, cluster_index, round, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -476,6 +508,8 @@ def query_get_footprint_model(global_node_index, cluster_index, round, caller_us
 	decode_method = base64_string_to_ipfs_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_user(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -498,6 +532,8 @@ def query_get_user(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_file(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -520,6 +556,8 @@ def query_get_file(file_location, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_file
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_stake(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -542,6 +580,8 @@ def query_get_stake(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_reputation(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -564,6 +604,8 @@ def query_get_reputation(user_addr, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_file_author(file_location, caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -586,6 +628,32 @@ def query_get_file_author(file_location, caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_bech32_address
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
+
+def query_get_file_cluster_node(file_location, caller_user_addr = CALLER_USER_ADDR):
+	builder = ContractQueryBuilder(
+		contract = contract_address,
+		function = "get_file_cluster_node",
+		call_arguments = [file_location],
+		caller = Address.from_bech32(caller_user_addr)
+	)
+	query = builder.build()
+	print(f'>>>Performing immutable query to get_file_cluster_node...')
+	response = network_provider.query_contract(query).to_dictionary()
+	print(response)
+	return_code = response['returnCode']
+	if return_code != 'ok':
+		print('Error in the response')
+		return None
+	return_data = response['returnData']
+	output_type = 'NodeCluster'
+	return_data = return_data[0]
+	decode_method = base64_string_to_node_cluser
+	decoded_response = decode_method(return_data)
+	print(decoded_response)
+	return decoded_response
+
 
 def query_get_files_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -608,6 +676,8 @@ def query_get_files_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_users_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -630,6 +700,8 @@ def query_get_users_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_nodes_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -652,6 +724,8 @@ def query_get_nodes_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_clusters_count(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -674,6 +748,8 @@ def query_get_clusters_count(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_round(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -696,6 +772,8 @@ def query_get_round(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	builder = ContractQueryBuilder(
@@ -718,6 +796,8 @@ def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	decode_method = base64_string_to_numeric
 	decoded_response = decode_method(return_data)
 	print(decoded_response)
+	return decoded_response
+
 
 def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
@@ -976,6 +1056,30 @@ def mutate_clear_adj_matrix_file(file_location, cluster_index, wallet_path = WAL
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
+def mutate_clear_all_round_files(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+	"""Parameters description
+		round - u32
+	"""
+	signer = UserSigner.from_pem_file(Path(wallet_path))
+	user_addr = Address.from_bech32(caller_user_addr)
+	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
+	call_transaction = sc_factory.create_transaction_for_execute(
+		sender=user_addr,
+		contract=contract_address,
+		function="clear_all_round_files",
+		gas_limit=60000000,
+		arguments=[round]
+	)
+	local_nonce = nonce_cache.get(caller_user_addr, -1)
+	gateway_nonce = nonce_holder.get_nonce_then_increment()
+	curr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one
+	nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
+	call_transaction.nonce = curr_nonce
+	call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
+	print(f'>>>Performing mutable call to clear_all_round_files...')
+	response = network_provider.send_transaction(call_transaction)
+	print(f'>>>Transaction hash: {response}')
+
 def mutate_upload_cluster_description(cluster_index, global_node_index, local_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
 	"""Parameters description
 		cluster_index - u16
@@ -1212,6 +1316,3 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	print(f'>>>Performing mutable call to test_event...')
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
-
-# mutate_set_stage(4)
-mutate_test_event(5)
