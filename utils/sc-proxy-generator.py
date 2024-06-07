@@ -185,7 +185,7 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
         inputs_seq += ', '
     if "payableInTokens" in endpoint_data and endpoint_data['payableInTokens'][0] == '*':
         inputs_seq += 'native_amount = 1, '
-    inputs_seq += 'wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR'
+    inputs_seq += 'wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT'
     file_handle.write(f"def {method_name}({inputs_seq}):\n")
     if len(endpoint_data['inputs']) > 0:
         file_handle.write("\t\"\"\"Parameters description\n")
@@ -200,7 +200,7 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
     file_handle.write(f"\t\tsender=user_addr,\n")
     file_handle.write(f"\t\tcontract=contract_address,\n")
     file_handle.write(f"\t\tfunction=\"{endpoint_data['name']}\",\n")
-    file_handle.write(f"\t\tgas_limit={GAS_LIMIT},\n")
+    file_handle.write(f"\t\tgas_limit=gas_limit,\n")
     if "payableInTokens" in endpoint_data and endpoint_data['payableInTokens'][0] == '*':
         file_handle.write("\t\tnative_transfer_amount=native_amount,\n")
     file_handle.write("\t\targuments=[")
