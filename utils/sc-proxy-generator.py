@@ -13,7 +13,9 @@ ABI_SOURCE = os.getenv("ABI_SOURCE")
 CALLER_USER_ADDR = os.getenv("CALLER_USER_ADDR")
 WALLET_PATH = os.getenv("WALLET_PATH")
 PROJECT_PATH = os.getenv("PROJECT_PATH")
+SC_LOGGING_LOCAL_PATH = os.getenv("SC_LOGGING_LOCAL_PATH")
 
+LOGGER_OUTPUT = os.path.join(PROJECT_PATH, SC_LOGGING_LOCAL_PATH)
 CONVERTS_PATH = os.path.join(PROJECT_PATH, "utils/converts.py")
 
 parser = argparse.ArgumentParser()
@@ -37,6 +39,7 @@ def read_abi_file(file_path = ABI_SOURCE):
         exit(1)
  
 def insert_imports(file_handler):
+    file_handler.write("import logging\n")
     file_handler.write("from pathlib import Path\n")
     file_handler.write("from multiversx_sdk import TokenComputer\n")
     file_handler.write("from multiversx_sdk import SmartContractTransactionsFactory\n")
@@ -47,7 +50,16 @@ def insert_imports(file_handler):
     file_handler.write("from multiversx_sdk import ApiNetworkProvider\n")
     file_handler.write("from multiversx_sdk import AccountNonceHolder\n\n")    
 
+def insert_logger(file_handler):
+    file_handler.write("logging.basicConfig(\n")
+    file_handler.write("\tlevel=logging.INFO,\n")
+    file_handler.write(f"\tformat='%(asctime)s - %(name)s - %(levelname)s - %(message)s',\n")
+    file_handler.write(f"\thandlers=[logging.FileHandler(LOGGER_OUTPUT), logging.StreamHandler()]\n")
+    file_handler.write(")\n")
+    file_handler.write("logger = logging.getLogger(__name__)\n\n")
+
 def insert_constants(file_handler):
+    file_handler.write(f"LOGGER_OUTPUT = \"{LOGGER_OUTPUT}\"\n")
     file_handler.write(f"SC_ADDR = \"{SC_ADDR}\"\n")
     file_handler.write(f"CHAIN_ID = \"{CHAIN_ID}\"\n")
     file_handler.write(f"NETWORK_PROVIDER = \"{NETWORK_PROVIDER}\"\n")
@@ -143,10 +155,11 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     inputs_seq += "caller_user_addr = CALLER_USER_ADDR"
     
     file_handle.write(f"def {method_name}({inputs_seq}):\n")
-    file_handle.write("\tbuilder = ContractQueryBuilder(\n")
-    file_handle.write(f"\t\tcontract = contract_address,\n")
-    file_handle.write(f"\t\tfunction = \"{endpoint_data['name']}\",\n")
-    file_handle.write("\t\tcall_arguments = [")
+    file_handle.write('\ttry:\n')
+    file_handle.write("\t\tbuilder = ContractQueryBuilder(\n")
+    file_handle.write(f"\t\t\tcontract = contract_address,\n")
+    file_handle.write(f"\t\t\tfunction = \"{endpoint_data['name']}\",\n")
+    file_handle.write("\t\t\tcall_arguments = [")
     
     query_inputs = endpoint_data['inputs']
     query_inputs = map(process_query_input, query_inputs)
@@ -154,28 +167,30 @@ def generate_for_immutable_endpoint(file_handle, endpoint_data):
     file_handle.write(f"{call_input_seq}")
     
     file_handle.write("],\n")
-    file_handle.write("\t\tcaller = Address.from_bech32(caller_user_addr)\n")
-    file_handle.write("\t)\n")
-    file_handle.write("\tquery = builder.build()\n")
-    file_handle.write(f"\tprint(f'>>>Performing immutable query to {endpoint_data['name']}...')\n")
-    file_handle.write("\tresponse = network_provider.query_contract(query).to_dictionary()\n")
-    file_handle.write("\tprint(response)\n")
-    file_handle.write("\treturn_code = response['returnCode']\n")
-    file_handle.write("\tif return_code != 'ok':\n")
-    file_handle.write("\t\tprint('Error in the response')\n")
-    file_handle.write("\t\treturn None\n")
+    file_handle.write("\t\t\tcaller = Address.from_bech32(caller_user_addr)\n")
+    file_handle.write("\t\t)\n")
+    file_handle.write("\t\tquery = builder.build()\n")
+    file_handle.write(f"\t\tlogger.info(f'>>>Performing immutable query to {endpoint_data['name']}...')\n")
+    file_handle.write("\t\tresponse = network_provider.query_contract(query).to_dictionary()\n")
+    file_handle.write("\t\tlogger.info(response)\n")
+    file_handle.write("\t\treturn_code = response['returnCode']\n")
+    file_handle.write("\t\tif return_code != 'ok':\n")
+    file_handle.write("\t\t\tlogger.error('Error in the response')\n")
+    file_handle.write("\t\t\treturn None\n")
     
     # file_handle.write("\treturn_message = response['returnMessage']\n")
     # file_handle.write("\tgas_used = response['gasUsed']\n")
-    file_handle.write("\treturn_data = response['returnData']\n")
+    file_handle.write("\t\treturn_data = response['returnData']\n")
     output_type = endpoint_data['outputs'][0]['type']
     print(f"Output type: {output_type} for endpoint {endpoint_data['name']}")
-    file_handle.write(f"\toutput_type = \'{output_type}\'\n")
-    file_handle.write("\treturn_data = return_data[0]\n")
-    file_handle.write(f"\tdecode_method = {choose_decode_method(output_type)}\n")
-    file_handle.write("\tdecoded_response = decode_method(return_data)\n")
-    file_handle.write("\tprint(decoded_response)\n")
-    file_handle.write("\treturn decoded_response\n\n\n")
+    file_handle.write(f"\t\toutput_type = \'{output_type}\'\n")
+    file_handle.write("\t\treturn_data = return_data[0]\n")
+    file_handle.write(f"\t\tdecode_method = {choose_decode_method(output_type)}\n")
+    file_handle.write("\t\tdecoded_response = decode_method(return_data)\n")
+    file_handle.write("\t\tlogger.info(decoded_response)\n")
+    file_handle.write("\t\treturn decoded_response\n")
+    file_handle.write("\texcept Exception as e:\n")
+    file_handle.write("\t\tlogger.error(f'Error in the query: {e}')\n\n")
 
 
 def generate_for_mutable_endpoint(file_handle, endpoint_data):
@@ -193,29 +208,34 @@ def generate_for_mutable_endpoint(file_handle, endpoint_data):
             file_handle.write(f"\t\t{input['name']} - {input['type']}\n")
         file_handle.write("\t\"\"\"\n")
     
-    file_handle.write("\tsigner = UserSigner.from_pem_file(Path(wallet_path))\n")
-    file_handle.write("\tuser_addr = Address.from_bech32(caller_user_addr)\n")
-    file_handle.write("\tnonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)\n")
-    file_handle.write("\tcall_transaction = sc_factory.create_transaction_for_execute(\n")
-    file_handle.write(f"\t\tsender=user_addr,\n")
-    file_handle.write(f"\t\tcontract=contract_address,\n")
-    file_handle.write(f"\t\tfunction=\"{endpoint_data['name']}\",\n")
-    file_handle.write(f"\t\tgas_limit=gas_limit,\n")
+    file_handle.write('\ttry:\n')
+    file_handle.write("\t\tsigner = UserSigner.from_pem_file(Path(wallet_path))\n")
+    file_handle.write("\t\tuser_addr = Address.from_bech32(caller_user_addr)\n")
+    file_handle.write("\t\tnonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)\n")
+    file_handle.write("\t\tcall_transaction = sc_factory.create_transaction_for_execute(\n")
+    file_handle.write(f"\t\t\tsender=user_addr,\n")
+    file_handle.write(f"\t\t\tcontract=contract_address,\n")
+    file_handle.write(f"\t\t\tfunction=\"{endpoint_data['name']}\",\n")
+    file_handle.write(f"\t\t\tgas_limit=gas_limit,\n")
     if "payableInTokens" in endpoint_data and endpoint_data['payableInTokens'][0] == '*':
-        file_handle.write("\t\tnative_transfer_amount=native_amount,\n")
-    file_handle.write("\t\targuments=[")
+        file_handle.write("\t\t\tnative_transfer_amount=native_amount,\n")
+    file_handle.write("\t\t\targuments=[")
     file_handle.write(', '.join([f"{input['name']}" for input in endpoint_data['inputs']]))
     file_handle.write("]\n")
-    file_handle.write("\t)\n")
-    file_handle.write("\tlocal_nonce = nonce_cache.get(caller_user_addr, -1)\n")
-    file_handle.write("\tgateway_nonce = nonce_holder.get_nonce_then_increment()\n")
-    file_handle.write("\tcurr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one\n")
-    file_handle.write("\tnonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value\n")
-    file_handle.write("\tcall_transaction.nonce = curr_nonce\n")
-    file_handle.write("\tcall_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))\n")
-    file_handle.write(f"\tprint(f'>>>Performing mutable call to {endpoint_data['name']}...')\n")
-    file_handle.write("\tresponse = network_provider.send_transaction(call_transaction)\n")
-    file_handle.write("\tprint(f'>>>Transaction hash: {response}')\n\n")
+    file_handle.write("\t\t)\n")
+    file_handle.write("\t\tlocal_nonce = nonce_cache.get(caller_user_addr, -1)\n")
+    file_handle.write("\t\tgateway_nonce = nonce_holder.get_nonce_then_increment()\n")
+    file_handle.write("\t\tcurr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one\n")
+    file_handle.write("\t\tnonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value\n")
+    file_handle.write("\t\tcall_transaction.nonce = curr_nonce\n")
+    file_handle.write("\t\tcall_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))\n")
+    file_handle.write(f"\t\tlogger.info(f'>>>Performing mutable call to {endpoint_data['name']} for ")
+    file_handle.write("user address: {caller_user_addr}...')\n")
+    
+    file_handle.write("\t\tresponse = network_provider.send_transaction(call_transaction)\n")
+    file_handle.write("\t\tlogger.info(f'>>>Transaction hash: {response}')\n")
+    file_handle.write("\texcept Exception as e:\n")
+    file_handle.write("\t\tlogger.error(f'Error in the executing the transaction: {e}')\n\n")
     
 
 with open(CLIENT_DEST, 'w') as file:
@@ -225,6 +245,7 @@ with open(CLIENT_DEST, 'w') as file:
     file.write("\n\n")
     insert_imports(file)
     insert_constants(file)
+    insert_logger(file)
     
     mutable_endpoints = [endpoint for endpoint in endpoints_section
                          if endpoint['mutability'] == 'mutable' and endpoint['name'] not in ignored_endpoints]

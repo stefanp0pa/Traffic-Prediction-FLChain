@@ -24,3 +24,4 @@ FL/data_node
 flchain-official/wallets
 .env
 pooling-service.log
+sc-client.log
