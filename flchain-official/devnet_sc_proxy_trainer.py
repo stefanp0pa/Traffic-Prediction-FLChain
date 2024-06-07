@@ -812,7 +812,7 @@ def query_get_stage(caller_user_addr = CALLER_USER_ADDR):
 	return decoded_response
 
 
-def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
@@ -825,7 +825,7 @@ def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, 
 		sender=user_addr,
 		contract=contract_address,
 		function="upload_dataset_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -838,7 +838,7 @@ def mutate_upload_dataset_file(file_location, global_node_index, cluster_index, 
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_candidate_model_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_candidate_model_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
@@ -851,7 +851,7 @@ def mutate_upload_candidate_model_file(file_location, global_node_index, cluster
 		sender=user_addr,
 		contract=contract_address,
 		function="upload_candidate_model_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -864,7 +864,7 @@ def mutate_upload_candidate_model_file(file_location, global_node_index, cluster
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_footprint_model_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_footprint_model_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
@@ -877,7 +877,7 @@ def mutate_upload_footprint_model_file(file_location, global_node_index, cluster
 		sender=user_addr,
 		contract=contract_address,
 		function="upload_footprint_model_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -890,7 +890,7 @@ def mutate_upload_footprint_model_file(file_location, global_node_index, cluster
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_cluster_aggregation_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_cluster_aggregation_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -902,7 +902,7 @@ def mutate_upload_cluster_aggregation_file(file_location, cluster_index, wallet_
 		sender=user_addr,
 		contract=contract_address,
 		function="upload_cluster_aggregation_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -915,7 +915,7 @@ def mutate_upload_cluster_aggregation_file(file_location, cluster_index, wallet_
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -927,7 +927,7 @@ def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WA
 		sender=user_addr,
 		contract=contract_address,
 		function="upload_adj_matrix_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -940,7 +940,7 @@ def mutate_upload_adj_matrix_file(file_location, cluster_index, wallet_path = WA
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_dataset_file(file_location, global_node_index, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
@@ -953,7 +953,7 @@ def mutate_clear_dataset_file(file_location, global_node_index, cluster_index, w
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_dataset_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, global_node_index, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -966,7 +966,7 @@ def mutate_clear_dataset_file(file_location, global_node_index, cluster_index, w
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_cluster_aggregation_file(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_cluster_aggregation_file(file_location, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -979,7 +979,7 @@ def mutate_clear_cluster_aggregation_file(file_location, cluster_index, round, w
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_cluster_aggregation_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, cluster_index, round]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -992,7 +992,7 @@ def mutate_clear_cluster_aggregation_file(file_location, cluster_index, round, w
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_footprint_model_file(file_location, global_node_index, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_footprint_model_file(file_location, global_node_index, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
@@ -1006,7 +1006,7 @@ def mutate_clear_footprint_model_file(file_location, global_node_index, cluster_
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_footprint_model_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, global_node_index, cluster_index, round]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1019,7 +1019,7 @@ def mutate_clear_footprint_model_file(file_location, global_node_index, cluster_
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_candidate_model_file(file_location, global_node_index, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_candidate_model_file(file_location, global_node_index, cluster_index, round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		global_node_index - u16
@@ -1033,7 +1033,7 @@ def mutate_clear_candidate_model_file(file_location, global_node_index, cluster_
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_candidate_model_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, global_node_index, cluster_index, round]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1046,7 +1046,7 @@ def mutate_clear_candidate_model_file(file_location, global_node_index, cluster_
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_adj_matrix_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_adj_matrix_file(file_location, cluster_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		cluster_index - u16
@@ -1058,7 +1058,7 @@ def mutate_clear_adj_matrix_file(file_location, cluster_index, wallet_path = WAL
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_adj_matrix_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, cluster_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1071,7 +1071,7 @@ def mutate_clear_adj_matrix_file(file_location, cluster_index, wallet_path = WAL
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_all_round_files(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_all_round_files(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		round - u32
 	"""
@@ -1082,7 +1082,7 @@ def mutate_clear_all_round_files(round, wallet_path = WALLET_PATH, caller_user_a
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_all_round_files",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[round]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1095,7 +1095,7 @@ def mutate_clear_all_round_files(round, wallet_path = WALLET_PATH, caller_user_a
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_upload_cluster_description(cluster_index, global_node_index, local_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_upload_cluster_description(cluster_index, global_node_index, local_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		cluster_index - u16
 		global_node_index - u16
@@ -1108,7 +1108,7 @@ def mutate_upload_cluster_description(cluster_index, global_node_index, local_no
 		sender=user_addr,
 		contract=contract_address,
 		function="upload_cluster_description",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[cluster_index, global_node_index, local_node_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1121,7 +1121,7 @@ def mutate_upload_cluster_description(cluster_index, global_node_index, local_no
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_cluster_description(cluster_index, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_cluster_description(cluster_index, global_node_index, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		cluster_index - u16
 		global_node_index - u16
@@ -1133,7 +1133,7 @@ def mutate_clear_cluster_description(cluster_index, global_node_index, wallet_pa
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_cluster_description",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[cluster_index, global_node_index]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1146,7 +1146,7 @@ def mutate_clear_cluster_description(cluster_index, global_node_index, wallet_pa
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_evaluate_file(file_location, status, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_evaluate_file(file_location, status, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		file_location - array46<u8>
 		status - EvaluationStatus
@@ -1158,7 +1158,7 @@ def mutate_evaluate_file(file_location, status, wallet_path = WALLET_PATH, calle
 		sender=user_addr,
 		contract=contract_address,
 		function="evaluate_file",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[file_location, status]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1171,7 +1171,7 @@ def mutate_evaluate_file(file_location, status, wallet_path = WALLET_PATH, calle
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_signup_user(native_amount = 1, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_signup_user(native_amount = 1, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
 	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
@@ -1179,7 +1179,7 @@ def mutate_signup_user(native_amount = 1, wallet_path = WALLET_PATH, caller_user
 		sender=user_addr,
 		contract=contract_address,
 		function="signup_user",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		native_transfer_amount=native_amount,
 		arguments=[]
 	)
@@ -1193,7 +1193,7 @@ def mutate_signup_user(native_amount = 1, wallet_path = WALLET_PATH, caller_user
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_clear_user(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_clear_user(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
 	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
@@ -1201,7 +1201,7 @@ def mutate_clear_user(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 		sender=user_addr,
 		contract=contract_address,
 		function="clear_user",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1214,7 +1214,7 @@ def mutate_clear_user(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_update_reputation(user_addr, reputation, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_update_reputation(user_addr, reputation, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		user_addr - Address
 		reputation - u32
@@ -1226,7 +1226,7 @@ def mutate_update_reputation(user_addr, reputation, wallet_path = WALLET_PATH, c
 		sender=user_addr,
 		contract=contract_address,
 		function="update_reputation",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[user_addr, reputation]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1239,7 +1239,7 @@ def mutate_update_reputation(user_addr, reputation, wallet_path = WALLET_PATH, c
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_next_round(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_next_round(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	signer = UserSigner.from_pem_file(Path(wallet_path))
 	user_addr = Address.from_bech32(caller_user_addr)
 	nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
@@ -1247,7 +1247,7 @@ def mutate_next_round(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 		sender=user_addr,
 		contract=contract_address,
 		function="next_round",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1260,7 +1260,7 @@ def mutate_next_round(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_set_round(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_set_round(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		round - u32
 	"""
@@ -1271,7 +1271,7 @@ def mutate_set_round(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER
 		sender=user_addr,
 		contract=contract_address,
 		function="set_round",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[round]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1284,7 +1284,7 @@ def mutate_set_round(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_set_stage(stage, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_set_stage(stage, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		stage - Stage
 	"""
@@ -1295,7 +1295,7 @@ def mutate_set_stage(stage, wallet_path = WALLET_PATH, caller_user_addr = CALLER
 		sender=user_addr,
 		contract=contract_address,
 		function="set_stage",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[stage]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
@@ -1308,7 +1308,7 @@ def mutate_set_stage(stage, wallet_path = WALLET_PATH, caller_user_addr = CALLER
 	response = network_provider.send_transaction(call_transaction)
 	print(f'>>>Transaction hash: {response}')
 
-def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR):
+def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		event_type - u8
 	"""
@@ -1319,7 +1319,7 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 		sender=user_addr,
 		contract=contract_address,
 		function="test_event",
-		gas_limit=60000000,
+		gas_limit=gas_limit,
 		arguments=[event_type]
 	)
 	local_nonce = nonce_cache.get(caller_user_addr, -1)
