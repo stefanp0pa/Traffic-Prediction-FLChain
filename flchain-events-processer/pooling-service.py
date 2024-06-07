@@ -46,6 +46,7 @@ def get_transaction_events(txHash):
     url = f'{API_GATEWAY}/{TRANSACTIONS_PATH}/{txHash}'
     response = requests.get(url)
     response_json = response.json()
+    print(response_json)
     events = response_json['logs']['events']
     return events
 

@@ -5,6 +5,14 @@ import numpy as np
 import os
 import torch
 from scipy.sparse.linalg import eigs
+import os
+import signal
+import time
+from devnet_sc_proxy_trainer import mutate_set_stage 
+
+def kill_current_process():
+    os.kill(os.getpid(), signal.SIGTERM)
+
 
 def generate_random_string(length):
     characters = string.ascii_letters + string.digits
@@ -69,3 +77,17 @@ def get_device():
     DEVICE = torch.device('cuda:0')
     print("CUDA:", USE_CUDA, DEVICE)
     return DEVICE
+
+
+def get_client_addr(client_index, file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        if 0 < client_index <= len(lines):
+            line = lines[client_index - 1]
+            return line.rstrip('\n')
+        return None
+
+
+def advance_stage(next_stage):
+    time.sleep(30)
+    mutate_set_stage(next_stage)

@@ -105,7 +105,7 @@ class Client:
                 best_acc = avg_loss
                 self.best_model = copy.deepcopy(self.model)
 
-            print(f"Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}")
+            print(f"Node: {self.get_node()}, Cluster: {self.get_cluster()} Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}")
 
         self.save_best_model()
 
