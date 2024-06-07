@@ -17,8 +17,9 @@ flchain-official/utils/__pycache__/
 flchain-official/models_node
 flchain-official/modesl_aggregated
 flchain-official/__pycache__
-flchain-official/model/__pycache__
 flchain-official/blockchain_seed/node_model_cluster
+flchain-official/node_evaluator/
+flchain-official/model/__pycache__
 FL/data_node
 flchain-official/wallets
 .env

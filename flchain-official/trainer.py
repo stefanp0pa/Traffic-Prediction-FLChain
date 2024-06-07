@@ -2,7 +2,7 @@ import json
 from utils.rabbitmq import setup_rabbit
 from utils.utils import upload_file, get_device, get_client_addr, kill_current_process, advance_stage
 from utils.process import create_process
-from utils.model import create_model_from_hash
+from utils.model import create_model_from_hash, initiate_model_from_hash
 from model.client import Client
 from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, mutate_set_stage
 
@@ -33,23 +33,13 @@ def train_model(node_id):
         return
 
     for cluster in clusters:
-        response = query_get_training_data(node_id, cluster)
-        if response is None:
-            pass
-    
-        body = json.loads(json.dumps(response))
-        unhash_data = create_model_from_hash(body)
-        client = Client(node_id, cluster, unhash_data['cluster_index'], unhash_data['matrix']['matrix'] ,unhash_data['dataset'],DEVICE)
-        if 'node_index' in unhash_data['my_model']:
-            del unhash_data['my_model']['node_index']
-            del unhash_data['my_model']['cluster_index']
-
-        client.load_model(unhash_data['my_model'], unhash_data['cluster_model'])
+        client = initiate_model_from_hash(node_id, cluster, DEVICE)
         client.train()
 
         upload_client_file(client, lambda file_hash: mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
         client.save_best_model()
         upload_client_file(client, lambda file_hash: mutate_upload_candidate_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
+
     kill_current_process()
 
 

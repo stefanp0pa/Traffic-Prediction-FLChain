@@ -5,6 +5,7 @@ import torch.nn as nn
 import numpy as np
 from model.GCN import GCN
 from datetime import datetime
+from sklearn.metrics import mean_squared_error
 from utils.utils import scaled_Laplacian, cheb_polynomial, create_directory
 import copy
 
@@ -28,6 +29,7 @@ class Client:
         self.cluster_index = cluster_index - 1
         self.__train_loader, self.__train_target_tensor =  create_dataloaders('train_x', 'train_target', data, DEVICE)
         self.__test_loader, self.__test_target_tensor = create_dataloaders('test_x', 'test_target', data, DEVICE)
+        self.__test_target_tensor = self.__test_target_tensor.cpu().numpy()
         self.__mean = data['mean']
         self.__std = data['std']
         self.create_model()
@@ -50,10 +52,39 @@ class Client:
         self.best_model = copy.deepcopy(model)
 
 
+    def remove_signature(self, model):
+        if 'signature' in model:
+            del model['signature']
+        return model
+
+
     def load_model(self, local_model, global_model):
+        local_model = self.remove_signature(local_model)
+        global_model = self.remove_signature(global_model)
         self.model.load_state_dict(local_model)
         self.update_model(global_model)
         self.best_model = copy.deepcopy(self.model)
+
+
+    def evaluate(self):
+        print("Incepe predictia boss")
+        self.model.train(False)
+        prediction = []
+        with torch.no_grad():
+            for batch_data in self.__test_loader:
+                encoder_inputs, labels = batch_data
+                encoder_inputs = encoder_inputs.unsqueeze(1)
+                output = self.model(encoder_inputs)
+                prediction.append(output.detach().cpu().numpy())
+            
+            prediction = np.concatenate(prediction, 0)
+            prediction_length = prediction.shape[2]
+            error_avg = 0.
+            for i in range(prediction_length):
+                assert self.__test_target_tensor.shape[0] == prediction.shape[0]
+                error = mean_squared_error(self.__test_target_tensor[:, :, i], prediction[:, :, i]) ** 0.5
+                error_avg += error
+            print(error_avg/prediction_length)
 
 
     def on_device(self, DEVICE):
@@ -68,6 +99,7 @@ class Client:
             layer.cheb_conv.DEVICE = DEVICE
             for t in layer.cheb_conv.Theta:
                 t.to(DEVICE)
+
 
     def update_model(self, global_model):
         param = {}
@@ -85,6 +117,7 @@ class Client:
         self.criterion = nn.L1Loss().to(self.DEVICE)
         optimizer = optim.Adam(self.model.parameters(), lr=constants.learning_rate)
         best_acc = np.inf
+        self.model.train(True)
 
         for epoch in range(0, constants.epochs):
             self.model.train()
@@ -111,7 +144,6 @@ class Client:
 
 
     def save_best_model(self):
-
         save_directory = f"{constants.model_save_directory}/{self.__node}_{self.cluster}"
         create_directory(save_directory)
         now = datetime.now()

@@ -44,6 +44,7 @@ def create_directory(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+
 def scaled_Laplacian(W):
     # L = D-W
     # lambda_max = eigenvalue
