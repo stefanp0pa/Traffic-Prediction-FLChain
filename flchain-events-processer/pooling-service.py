@@ -68,7 +68,7 @@ def get_transaction_events(txHash, retries_count = 3):
             if 'events' not in response_json['logs']:
                 raise KeyError("Missing 'events' key or 'events' is not a dictionary")
             return response_json['logs']['events']
-        except (requests.RequestException, ValueError, KeyError) as e:
+        except Exception as e:
             logger.debug(f"Attempt {attempt + 1} failed for url {url}: {e}")
             if attempt < retries_count - 1:
                 time.sleep(retries_count)  # optional: add delay between retries
