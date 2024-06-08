@@ -21,6 +21,8 @@ flchain-official/blockchain_seed/node_model_cluster
 flchain-official/node_evaluator/
 flchain-official/model/__pycache__
 FL/data_node
+flchain-official/cluster_evaluator
 .env
 pooling-service.log
 sc-client.log
+flchain-official/aggregator

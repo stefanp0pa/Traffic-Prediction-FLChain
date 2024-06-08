@@ -1,15 +1,13 @@
 from utils.rabbitmq import setup_rabbit
-from utils.utils import get_device, advance_stage, create_directory, extract_node_files, extract_evaluated_files
+from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
 import torch
 import constants
-from devnet_sc_proxy_trainer import query_get_all_round_files, query_get_round, query_get_file_cluster_node, mutate_evaluate_file
-
+from devnet_sc_proxy_trainer import mutate_evaluate_file
 
 DIR_EVALUATOR = 'node_evaluator'
 ERROR_THRESHOLD = 0.03
-
 
 def evaluate_train(cluster_id):
     DEVICE = get_device()
