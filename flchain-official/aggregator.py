@@ -2,7 +2,7 @@ import torch
 from utils.process import create_process, kill_current_process
 from utils.utils import upload_file, advance_stage, extract_evaluated_files, create_directory, extract_node_files
 from utils.rabbitmq import setup_rabbit
-from devnet_sc_proxy_trainer import mutate_upload_cluster_aggregation_file, query_get_all_file_evaluations
+from devnet_sc_proxy_trainer import mutate_upload_cluster_aggregation_file, query_get_all_file_evaluations, mutate_finalize_session
 from model.server import Server
 import constants
 
@@ -50,4 +50,5 @@ def setup_aggregator(aggregator_id):
 
 
 if __name__ == "__main__":
-    create_process([21], setup_aggregator, lambda: advance_stage(5))
+    agregate_model(21)
+    # create_process([21], setup_aggregator, lambda: advance_stage(5))

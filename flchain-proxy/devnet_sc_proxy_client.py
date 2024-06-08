@@ -1371,6 +1371,30 @@ def mutate_next_round(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
 
+def mutate_finalize_session(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
+	try:
+		signer = UserSigner.from_pem_file(Path(wallet_path))
+		user_addr = Address.from_bech32(caller_user_addr)
+		nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
+		call_transaction = sc_factory.create_transaction_for_execute(
+			sender=user_addr,
+			contract=contract_address,
+			function="finalize_session",
+			gas_limit=gas_limit,
+			arguments=[]
+		)
+		local_nonce = nonce_cache.get(caller_user_addr, -1)
+		gateway_nonce = nonce_holder.get_nonce_then_increment()
+		curr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one
+		nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
+		call_transaction.nonce = curr_nonce
+		call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
+		logger.info(f'>>>Performing mutable call to finalize_session for user address: {caller_user_addr}...')
+		response = network_provider.send_transaction(call_transaction)
+		logger.info(f'>>>Transaction hash: {response}')
+	except Exception as e:
+		logger.error(f'Error in the executing the transaction: {e}')
+
 def mutate_set_round(round, wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	"""Parameters description
 		round - u32
@@ -1452,8 +1476,10 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
 
-# mutate_set_stage(5)
-# query_get_all_file_evaluations("QmU1cf2RVsWx1UZ4DZn1o9mhwG5Awu9R2ZUFyRD34RQ1jq")
-# mutate_clear_all_round_files(1)
-# mutate_test_event(5)
-# query_get_file('QmXw8HoGmtR9fFozoWx2M4hnhwEeijEpgS9fEoMHdBEaAR')
+# mutate_finalize_session()
+# print(f"Current round {query_get_round()}")
+# print(f"Current stage {query_get_stage()}")
+# mutate_set_stage(3)
+# mutate_set_round(1)
+# query_get_cluster_aggregation_model(21, 2)
+# print(query_get_all_nodes_per_cluster(21))

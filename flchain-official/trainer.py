@@ -2,7 +2,7 @@ from utils.rabbitmq import setup_rabbit
 from utils.utils import upload_file, get_device, get_client_addr, advance_stage
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, query_get_cluster_aggregation_model, query_get_round
 
 WALLET_DIR="wallets"
 WALLET_DIR_ADDRESS_FILE="wallets_addr"
@@ -19,6 +19,7 @@ def upload_client_file(client, callback):
 
 def train_model(node_id):
     DEVICE = get_device()
+    current_round = query_get_round()
     wallet_path = f"{WORK_DIR}/{WALLET_DIR}/{WALLETS_DIR_TRAINERS}/{node_id}.pem"
     wallet_addres = f"{WORK_DIR}/{WALLET_DIR}/{WALLET_DIR_ADDRESS_FILE}/{WALLETS_DIR_TRAINERS}"
     

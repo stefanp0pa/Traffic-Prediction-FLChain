@@ -111,7 +111,6 @@ def extract_node_files(cluster_id, dir_path, uploaded_files, searched_type_files
         hash = file['file_location']
         details = query_get_file_cluster_node(hash)
         node_id = details['global_node_index']
-        print(node_id)
         cluster_index = details['cluster_index']
         type = find_file_name_by_code(file['file_type'], searched_type_files)
         file_path = f'{dir_path}/{type}_{node_id}.pth'

@@ -4,7 +4,7 @@ from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
 import torch
 import constants
-from devnet_sc_proxy_trainer import mutate_evaluate_file, query_get_all_nodes_per_cluster
+from devnet_sc_proxy_trainer import mutate_evaluate_file, query_get_all_nodes_per_cluster, mutate_set_round, query_get_round, mutate_set_stage
 
 DIR_EVALUATOR = 'cluster_evaluator'
 ERROR_THRESHOLD = 0.03
@@ -26,6 +26,12 @@ def evaluate_aggregation(cluster_id):
         client.load_model(candidate_model, candidate_model)
         error = client.evaluate()
         print(error)
+        status = constants.Verdict.POSITIVE
+
+        print(f"Cluster: {cluster_id} has a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
+        mutate_evaluate_file(data[f'{constants.File_Type.ClusterAggregationModel.file_name}_hash'], status.code)
+
+    kill_current_process()
 
 
 def setup_aggregator_evaluator(aggregator_evaluator_id):
@@ -36,6 +42,14 @@ def setup_aggregator_evaluator(aggregator_evaluator_id):
     setup_rabbit(aggregator_evaluator_id, stages_dict)
 
 
+def next_stage():
+    current_round = query_get_round()
+    mutate_set_round(current_round + 1)
+    mutate_set_stage(3)
+
+
 if __name__ == "__main__":
     evaluate_aggregation(21)
-    # create_process([21], setup_aggregator_evaluator, lambda: advance_stage(5))
+    # for i in range(5):
+ 
+    # create_process([21], setup_aggregator_evaluator, lambda: mutate_set_round())

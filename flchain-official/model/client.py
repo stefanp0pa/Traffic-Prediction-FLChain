@@ -37,7 +37,12 @@ class Client:
     
     def create_model(self):
         L_tilde = scaled_Laplacian(self.__adj_matrix)
-        cheb = [np.expand_dims(i[:, self.cluster_index], axis=0) for i in cheb_polynomial(L_tilde, constants.K)]
+        cheb = []
+        if self.cluster_index < 0:
+            cheb = [i for i in cheb_polynomial(L_tilde, constants.K)]
+        else: 
+            cheb = [np.expand_dims(i[:, self.cluster_index], axis=0) for i in cheb_polynomial(L_tilde, constants.K)]
+        
         cheb_polynomial_layer1 = [torch.from_numpy(i).type(torch.FloatTensor).to(self.DEVICE) for i in cheb]
         cheb_polynomials = [torch.from_numpy(i).type(torch.FloatTensor).to(self.DEVICE) for i in cheb_polynomial(L_tilde, constants.K)]
         model = GCN(self.DEVICE, constants.nb_block, constants.in_channels, constants.K, constants.nb_chev_filter, constants.nb_time_filter, constants.num_of_hours, cheb_polynomial_layer1, cheb_polynomials, constants.num_for_predict, constants.len_input)
