@@ -429,6 +429,12 @@
             "outputs": []
         },
         {
+            "name": "finalize_session",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
             "name": "set_round",
             "mutability": "mutable",
             "inputs": [

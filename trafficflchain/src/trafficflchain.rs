@@ -434,13 +434,23 @@ pub trait Trafficflchain {
         output
     }
 
-
     // ROUNDS AND STAGES ----------------------------------------------------
     #[endpoint]
     fn next_round(&self) {
-        // TODO: the caller should be checked before executing this method
         self.round().update(|round| { *round += 1 });
         self.set_round_event(self.round().get());
+        self.stage().set(Stage::ModelTraining);
+        self.set_stage_event(Stage::ModelTraining);
+    }
+
+    #[endpoint]
+    fn finalize_session(&self) {
+        // NOTE: we do not clear files here, those are cleared manually
+        // The intuition is that you want to resume to this data afterwards for future sanity checks
+        self.round().set(0);
+        self.set_round_event(0);
+        self.stage().set(Stage::Undefined);
+        self.set_stage_event(Stage::Undefined);
     }
 
     #[endpoint]
