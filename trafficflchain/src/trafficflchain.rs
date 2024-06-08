@@ -295,17 +295,27 @@ pub trait Trafficflchain {
         if self.cluster_adj_matrices(cluster_index).is_empty() {
             sc_panic!("Cluster adjacency matrix does not exist!");
         }
+
         let data_addr = self.node_datasets(global_node_index, cluster_index).get();
         if self.node_datasets(global_node_index, cluster_index).is_empty() {
             sc_panic!("Dataset does not exist!");
         }
         let prev_round = self.round().get() - 1; // this usually fails because we forget to set round > 0
+        // ideally, there should be no gaps in aggregated cluster models, each round should post a new aggregate model
         let prev_aggr_model = self.aggregation_models(cluster_index, prev_round).get();
         if self.aggregation_models(cluster_index, prev_round).is_empty() {
             sc_panic!("No previous aggregated model to use!");
         }
 
-        let footprint_model_addr = self.footprint_models(global_node_index, cluster_index, prev_round).get();
+        // if there are any gaps in footprints, will retrieve the latest available
+        let mut latest_available_footprint_round = prev_round;
+        for round_iter in (0..prev_round).rev() {
+            if !self.footprint_models(global_node_index, cluster_index, round_iter).is_empty() {
+                latest_available_footprint_round = round_iter;
+                break;
+            }
+        }
+        let footprint_model_addr = self.footprint_models(global_node_index, cluster_index, latest_available_footprint_round).get();
 
         let local_node_index = self.cluster_nodes(cluster_index)
             .iter().find(|cn| cn.global_node_index == global_node_index).unwrap().local_node_index;
@@ -318,7 +328,7 @@ pub trait Trafficflchain {
             dataset_addr: data_addr,
             aggr_cluster_model_addr: prev_aggr_model,
             footprind_model_addr: footprint_model_addr,
-            local_node_index
+            local_node_index: local_node_index
         }
     }
 
