@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           46
+// Endpoints:                           47
 // Async Callback (empty):               1
-// Total number of exported functions:  48
+// Total number of exported functions:  49
 
 #![no_std]
 #![allow(internal_features)]
@@ -46,6 +46,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         update_reputation => update_reputation
         get_candidate_models_for_aggregation => get_candidate_models_for_aggregation
         next_round => next_round
+        finalize_session => finalize_session
         set_round => set_round
         set_stage => set_stage
         get_node_dataset => node_datasets
