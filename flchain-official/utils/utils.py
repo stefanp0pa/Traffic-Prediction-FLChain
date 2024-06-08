@@ -6,12 +6,8 @@ import os
 import torch
 from scipy.sparse.linalg import eigs
 import os
-import signal
 import time
-from devnet_sc_proxy_trainer import mutate_set_stage 
-
-def kill_current_process():
-    os.kill(os.getpid(), signal.SIGTERM)
+from devnet_sc_proxy_trainer import mutate_set_stage, query_get_round, query_get_all_round_files, query_get_file_cluster_node
 
 
 def generate_random_string(length):
@@ -92,3 +88,51 @@ def get_client_addr(client_index, file_path):
 def advance_stage(next_stage):
     time.sleep(30)
     mutate_set_stage(next_stage)
+
+
+def find_file_name_by_code(code, file_types):
+    for file_type in file_types:
+        if file_type.code == code:
+            return file_type.file_name
+    return None
+
+
+def extract_evaluated_files(file_type):
+    current_round = query_get_round()
+    uploaded_files = query_get_all_round_files(current_round)
+    uploaded_files = [file for file in uploaded_files if 'file_type' in file and find_file_name_by_code(file['file_type'], file_type) is not None]
+    uploaded_files.reverse()
+    return uploaded_files, current_round
+
+
+def extract_node_files(cluster_id, dir_path, uploaded_files, searched_type_files):
+    node_cluster_dict = {}
+    for file in uploaded_files:
+        hash = file['file_location']
+        details = query_get_file_cluster_node(hash)
+        node_id = details['global_node_index']
+        cluster_index = details['cluster_index']
+        type = find_file_name_by_code(file['file_type'], searched_type_files)
+        file_path = f'{dir_path}/{type}_{node_id}.pth'
+
+        if type is None:
+            continue
+
+        if cluster_id != cluster_index:
+            continue
+        
+        if node_id not in node_cluster_dict:
+            node_cluster_dict[node_id] = {}
+
+        if type in node_cluster_dict[node_id]:
+            continue
+
+        succes = extract_file(hash, file_path)
+        if succes is None:
+            print(f'Error: File with hash: {hash} for node: {node_id} is not available')
+            continue
+        
+        node_cluster_dict[node_id][type] = file_path
+        node_cluster_dict[node_id][f"{type}_hash"] = hash
+
+    return node_cluster_dict

@@ -1,3 +1,5 @@
+from enum import Enum
+
 API_GATEWAY = 'https://devnet-api.multiversx.com'
 
 ACCOUNTS_PATH = 'accounts'
@@ -17,3 +19,24 @@ TRANSACTION_STATUS = {
 }
 
 RABBITMQ_HOST = 'localhost'
+
+
+AGGREGATOR_DIR = 'aggregator'
+
+class Verdict(Enum):
+    POSITIVE = 1
+    NEGATIVE = 2
+    def __init__(self, code):
+        self.code = code
+
+
+class File_Type(Enum):
+    Dataset = (1, 'Dataset')
+    FootprintModel = (2, 'Footprint') 
+    ClusterStructure = (3, 'Cluster Structure')
+    ClusterAggregationModel = (4, 'Aggregated Model')
+    CandidateModel = (5, 'Candidate')
+
+    def __init__(self, code, file_name):
+        self.code = code
+        self.file_name = file_name

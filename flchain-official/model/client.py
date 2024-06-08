@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 from model.GCN import GCN
 from datetime import datetime
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from utils.utils import scaled_Laplacian, cheb_polynomial, create_directory
 import copy
 
@@ -67,9 +67,9 @@ class Client:
 
 
     def evaluate(self):
-        print("Incepe predictia boss")
         self.model.train(False)
         prediction = []
+        error = 0
         with torch.no_grad():
             for batch_data in self.__test_loader:
                 encoder_inputs, labels = batch_data
@@ -78,13 +78,8 @@ class Client:
                 prediction.append(output.detach().cpu().numpy())
             
             prediction = np.concatenate(prediction, 0)
-            prediction_length = prediction.shape[2]
-            error_avg = 0.
-            for i in range(prediction_length):
-                assert self.__test_target_tensor.shape[0] == prediction.shape[0]
-                error = mean_squared_error(self.__test_target_tensor[:, :, i], prediction[:, :, i]) ** 0.5
-                error_avg += error
-            print(error_avg/prediction_length)
+            error = mean_absolute_error(self.__test_target_tensor.reshape(-1, 1), prediction.reshape(-1, 1))
+        return error
 
 
     def on_device(self, DEVICE):

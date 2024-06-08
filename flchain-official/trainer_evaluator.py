@@ -1,73 +1,49 @@
-import json
 from utils.rabbitmq import setup_rabbit
-from utils.utils import upload_file, get_device, get_client_addr, kill_current_process, advance_stage, create_directory, extract_file
-from utils.process import create_process
-from utils.model import create_model_from_hash, initiate_model_from_hash
-from model.client import Client
+from utils.utils import get_device, advance_stage, create_directory, extract_node_files, extract_evaluated_files
+from utils.process import create_process, kill_current_process
+from utils.model import initiate_model_from_hash
 import torch
-from devnet_sc_proxy_trainer import query_get_all_round_files, query_get_round, query_get_file_cluster_node
+import constants
+from devnet_sc_proxy_trainer import query_get_all_round_files, query_get_round, query_get_file_cluster_node, mutate_evaluate_file
 
 
 DIR_EVALUATOR = 'node_evaluator'
-
-def extract_node_files(cluster_id, evaluator_path, uploaded_files):
-    node_cluster_dict = {}
-    for file in uploaded_files:
-        hash = file['file_location']
-        details = query_get_file_cluster_node(hash)
-        node_id = details['global_node_index']
-        cluster_index = details['cluster_index']
-        type = 'candidate' if file['file_type'] == 2 else 'footprint'
-        file_path = f'{evaluator_path}/{type}_{node_id}.pth'
-
-        if cluster_id != cluster_index:
-            continue
-        
-        if node_id not in node_cluster_dict:
-            node_cluster_dict[node_id] = {}
-
-        if type in node_cluster_dict[node_id]:
-            continue
-
-        succes = extract_file(hash, file_path)
-        if succes is None:
-            print(f'Error: File with hash: {hash} for node: {node_id} is not available')
-            continue
-        
-        node_cluster_dict[node_id][type] = file_path
-
-    return node_cluster_dict 
+ERROR_THRESHOLD = 0.03
 
 
 def evaluate_train(cluster_id):
     DEVICE = get_device()
-    current_round = query_get_round()
-    uploaded_files = query_get_all_round_files(current_round)
-    uploaded_files = [file for file in uploaded_files if 'file_type' in file and (file['file_type'] == 5 or file['file_type'] == 2) ]
-    uploaded_files.reverse()
+    searched_file_type = [constants.File_Type.CandidateModel, constants.File_Type.FootprintModel]
+    uploaded_files, current_round = extract_evaluated_files(searched_file_type)
     evaluator_path = f'{DIR_EVALUATOR}/{cluster_id}/{current_round}'
     create_directory(evaluator_path)
-    node_cluster_dict = extract_node_files(cluster_id, evaluator_path, uploaded_files)
+    node_cluster_dict = extract_node_files(cluster_id, evaluator_path, uploaded_files, searched_file_type)
 
     for node_id in node_cluster_dict:
         node_files = node_cluster_dict[node_id]
-    
-        if 'candidate' not in node_files:
-            print(f"Error: Node {node_id} doesn't have candidate file")
-            continue
+        valid = True
 
-        if 'footprint' not in node_files:
-            print(f"Error: Node {node_id} doesn't have footprint file")
-            continue    
+        for file_type in searched_file_type:
+            if file_type.file_name not in node_files:
+                print(f"Error: Node {node_id} doesn't have {file_type.file_name} file")
+                valid = False
+
+        if valid is not True:
+            continue
         
         client = initiate_model_from_hash(node_id, cluster_id, DEVICE)
         footprint_model = torch.load(f'{evaluator_path}/footprint_{node_id}.pth')
         candidate_model = torch.load(f'{evaluator_path}/candidate_{node_id}.pth')
         client.load_model(footprint_model, candidate_model)
-        client.evaluate()
-        return
+        error = client.evaluate()
+        # status = constants.Verdict.NEGATIVE
+        # if error < ERROR_THRESHOLD:
+        status = constants.Verdict.POSITIVE
 
-    # kill_current_process()
+        print(f"Node: {node_id} has candidate file with a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
+        mutate_evaluate_file(node_files[f'{constants.File_Type.CandidateModel.file_name}_hash'], status.code)
+
+    kill_current_process()
 
 
 def setup_trainer_evaluator(trained_evaluator_id):

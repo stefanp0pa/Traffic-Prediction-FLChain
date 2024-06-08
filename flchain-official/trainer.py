@@ -1,10 +1,8 @@
-import json
 from utils.rabbitmq import setup_rabbit
-from utils.utils import upload_file, get_device, get_client_addr, kill_current_process, advance_stage
-from utils.process import create_process
-from utils.model import create_model_from_hash, initiate_model_from_hash
-from model.client import Client
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, mutate_set_stage
+from utils.utils import upload_file, get_device, get_client_addr, advance_stage
+from utils.process import create_process, kill_current_process
+from utils.model import initiate_model_from_hash
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file
 
 WALLET_DIR="wallets"
 WALLET_DIR_ADDRESS_FILE="wallets_addr"

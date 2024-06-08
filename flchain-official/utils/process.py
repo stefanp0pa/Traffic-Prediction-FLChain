@@ -1,4 +1,9 @@
 import multiprocessing
+import os
+import signal
+
+def kill_current_process():
+    os.kill(os.getpid(), signal.SIGTERM)
 
 def worker(index, callback):
     callback(index)
