@@ -1476,4 +1476,3 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 		logger.info(f'>>>Transaction hash: {response}')
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
-

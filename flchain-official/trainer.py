@@ -33,6 +33,8 @@ def train_model(node_id):
 
     for cluster in clusters:
         client = initiate_model_from_hash(node_id, cluster, DEVICE)
+        if client is None:
+            continue
         client.train()
 
         upload_client_file(client, lambda file_hash: mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
@@ -51,4 +53,6 @@ def setup_trainer(trained_id):
 
 
 if __name__ == "__main__":
-    create_process([121, 123, 140], setup_trainer, lambda: advance_stage(4))
+    # train_model(140)
+    for i in range(0, 5): 
+        create_process([121, 123, 140], setup_trainer, lambda: advance_stage(4))

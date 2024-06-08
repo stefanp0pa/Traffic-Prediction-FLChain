@@ -225,7 +225,7 @@ NETWORK_PROVIDER = "https://devnet-api.multiversx.com"
 CHAIN_NAME = "devnet"
 CALLER_USER_ADDR = "erd1rxufcd8sn9t2k5cavngu60qeeytkuxymajdarnyq5f8enh850wpq8at8xu"
 WALLET_PATH = "/home/robert/Desktop/Facultate/Licenta/Traffic-Prediction-FLChain/wallets/master.pem"
-GAS_LIMIT = 60000000
+GAS_LIMIT = 600000000
 
 transaction_factory_config = TransactionsFactoryConfig(CHAIN_ID)
 transaction_computer = TransactionComputer()
@@ -1476,10 +1476,8 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
 
-# mutate_finalize_session()
-# print(f"Current round {query_get_round()}")
-# print(f"Current stage {query_get_stage()}")
-# mutate_set_stage(3)
+# mutate_clear_all_round_files(1)
 # mutate_set_round(1)
-# query_get_cluster_aggregation_model(21, 2)
-# print(query_get_all_nodes_per_cluster(21))
+# mutate_set_stage(3)
+# mutate_test_event(5)
+# mutate_set_stage(6)

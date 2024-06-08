@@ -1,5 +1,5 @@
 from utils.rabbitmq import setup_rabbit
-from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files
+from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files, advance_stage
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
 import torch
@@ -30,16 +30,18 @@ def evaluate_train(cluster_id):
             continue
         
         client = initiate_model_from_hash(node_id, cluster_id, DEVICE)
-        footprint_model = torch.load(f'{evaluator_path}/footprint_{node_id}.pth')
-        candidate_model = torch.load(f'{evaluator_path}/candidate_{node_id}.pth')
+        footprint_model = torch.load(f'{evaluator_path}/{constants.File_Type.FootprintModel.file_name}_{node_id}.pth')
+        candidate_model = torch.load(f'{evaluator_path}/{constants.File_Type.CandidateModel.file_name}_{node_id}.pth')
         client.load_model(footprint_model, candidate_model)
         error = client.evaluate()
         # status = constants.Verdict.NEGATIVE
         # if error < ERROR_THRESHOLD:
+        print(f"Node: {node_id} Cluster: {cluster_id} has error: {error}")
         status = constants.Verdict.POSITIVE
 
         print(f"Node: {node_id} has candidate file with a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
         mutate_evaluate_file(node_files[f'{constants.File_Type.CandidateModel.file_name}_hash'], status.code)
+        mutate_evaluate_file(node_files[f'{constants.File_Type.FootprintModel.file_name}_hash'], status.code)
 
     kill_current_process()
 
@@ -53,5 +55,6 @@ def setup_trainer_evaluator(trained_evaluator_id):
 
 
 if __name__ == "__main__":
-    evaluate_train(21)
-    # create_process([21], setup_trainer_evaluator, lambda: advance_stage(5))
+    # evaluate_train(21)
+    for i in range(0, 5):
+        create_process([21], setup_trainer_evaluator, lambda: advance_stage(5))

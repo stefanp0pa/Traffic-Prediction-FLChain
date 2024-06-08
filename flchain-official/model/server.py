@@ -24,7 +24,6 @@ class Server:
         layers_name = self.__local_model[0].keys()
         
         for layer in layers_name:
-            print(layer)
             self.__global_model[layer] = torch.zeros_like(self.__local_model[0][layer])
 
             for model in self.__local_model:

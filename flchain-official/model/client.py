@@ -10,14 +10,14 @@ from utils.utils import scaled_Laplacian, cheb_polynomial, create_directory
 import copy
 
 def create_dataloaders(field, target, data, DEVICE, shuffle=False):
-        train = data[field]
-        train_target = data[target]
-        tensor = torch.from_numpy(train).type(torch.FloatTensor).to(DEVICE) 
-        target_tensor = torch.from_numpy(train_target).type(torch.FloatTensor).to(DEVICE)
-        dataset = torch.utils.data.TensorDataset(tensor, target_tensor)
-        loader = torch.utils.data.DataLoader(dataset, batch_size=constants.batch_size, shuffle=shuffle)
-
-        return loader, target_tensor
+    train = data[field]
+    train_target = data[target]
+    tensor = torch.from_numpy(train).type(torch.FloatTensor).to(DEVICE) 
+    target_tensor = torch.from_numpy(train_target).type(torch.FloatTensor).to(DEVICE)
+    dataset = torch.utils.data.TensorDataset(tensor, target_tensor)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=constants.batch_size, shuffle=shuffle)
+    
+    return loader, target_tensor
 
 class Client:
 
@@ -42,7 +42,6 @@ class Client:
             cheb = [i for i in cheb_polynomial(L_tilde, constants.K)]
         else: 
             cheb = [np.expand_dims(i[:, self.cluster_index], axis=0) for i in cheb_polynomial(L_tilde, constants.K)]
-        
         cheb_polynomial_layer1 = [torch.from_numpy(i).type(torch.FloatTensor).to(self.DEVICE) for i in cheb]
         cheb_polynomials = [torch.from_numpy(i).type(torch.FloatTensor).to(self.DEVICE) for i in cheb_polynomial(L_tilde, constants.K)]
         model = GCN(self.DEVICE, constants.nb_block, constants.in_channels, constants.K, constants.nb_chev_filter, constants.nb_time_filter, constants.num_of_hours, cheb_polynomial_layer1, cheb_polynomials, constants.num_for_predict, constants.len_input)
@@ -71,14 +70,21 @@ class Client:
         self.best_model = copy.deepcopy(self.model)
 
 
-    def evaluate(self):
+    def evaluate(self, test_data = None):
+        test_loader = self.__test_loader
+        if test_data is not None:
+            test_loader = test_data
+
         self.model.train(False)
         prediction = []
         error = 0
+
         with torch.no_grad():
-            for batch_data in self.__test_loader:
+            for batch_data in test_loader:
                 encoder_inputs, labels = batch_data
-                encoder_inputs = encoder_inputs.unsqueeze(1)
+                if test_data is None:
+                    encoder_inputs = encoder_inputs.unsqueeze(1)
+                
                 output = self.model(encoder_inputs)
                 prediction.append(output.detach().cpu().numpy())
             
