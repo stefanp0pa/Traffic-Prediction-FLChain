@@ -453,6 +453,23 @@ pub trait Trafficflchain {
         self.set_stage_event(Stage::ModelTraining);
     }
 
+    // Our current stage sequence is the following: 
+    // Initialization -> Model Training -> Evaluation Candidates -> Model Aggregation -> Evaluation Aggregation
+    // this endpoint should be used only cautiosly, only for certain stages
+    #[endpoint]
+    fn next_stage(&self) {
+        let curr_stage = self.stage().get();
+        let next_stage = match curr_stage {
+            Stage::Initialization => Stage::ModelTraining,
+            Stage::ModelTraining => Stage::EvaluationCandidates,
+            Stage::EvaluationCandidates => Stage::ModelAggregation,
+            Stage::ModelAggregation => Stage::EvaluationAggregation,
+            _ => Stage::Undefined
+        };
+        self.stage().set(next_stage);
+        self.set_stage_event(next_stage);
+    }
+
     #[endpoint]
     fn finalize_session(&self) {
         // NOTE: we do not clear files here, those are cleared manually
