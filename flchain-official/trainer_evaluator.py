@@ -56,5 +56,5 @@ def setup_trainer_evaluator(trained_evaluator_id):
 
 if __name__ == "__main__":
     # evaluate_train(21)
-    for i in range(0, 5):
+    for i in range(0, constants.NO_ROUNDS):
         create_process([21], setup_trainer_evaluator, lambda: advance_stage(5))

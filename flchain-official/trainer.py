@@ -3,6 +3,7 @@ from utils.utils import upload_file, get_device, get_client_addr, advance_stage
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
 from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, query_get_cluster_aggregation_model, query_get_round
+import constants
 
 WALLET_DIR="wallets"
 WALLET_DIR_ADDRESS_FILE="wallets_addr"
@@ -54,5 +55,5 @@ def setup_trainer(trained_id):
 
 if __name__ == "__main__":
     # train_model(140)
-    for i in range(0, 5): 
+    for i in range(0, constants.NO_ROUNDS): 
         create_process([121, 123, 140], setup_trainer, lambda: advance_stage(4))

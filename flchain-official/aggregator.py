@@ -51,5 +51,5 @@ def setup_aggregator(aggregator_id):
 
 if __name__ == "__main__":
     # agregate_model(21)
-    for i in range(0, 5):
+    for i in range(0, constants.NO_ROUNDS):
         create_process([21], setup_aggregator, lambda: advance_stage(6))

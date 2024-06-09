@@ -1,10 +1,11 @@
 from utils.rabbitmq import setup_rabbit
-from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files
+from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files, advance_stage
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash, get_cluster_data
 import torch
 import constants
-from devnet_sc_proxy_trainer import mutate_evaluate_file, query_get_all_nodes_per_cluster, mutate_set_round, query_get_round, mutate_set_stage
+import time
+from devnet_sc_proxy_trainer import mutate_evaluate_file, query_get_all_nodes_per_cluster, mutate_set_round, query_get_round, mutate_set_stage, mutate_next_round
 
 DIR_EVALUATOR = 'cluster_evaluator'
 ERROR_THRESHOLD = 0.03
@@ -43,13 +44,12 @@ def setup_aggregator_evaluator(aggregator_evaluator_id):
 
 
 def next_stage():
-    current_round = query_get_round()
-    mutate_set_round(current_round + 1)
-    mutate_set_stage(3)
+    time.sleep(15)
+    mutate_next_round()
+    advance_stage(3)
 
 
 if __name__ == "__main__":
-    # next_stage()
     # evaluate_aggregation(21)
-    for i in range(5):
+    for i in range(constants.NO_ROUNDS):
         create_process([21], setup_aggregator_evaluator, lambda: next_stage())

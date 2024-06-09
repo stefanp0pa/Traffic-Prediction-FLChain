@@ -1476,8 +1476,9 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
 
-# mutate_clear_all_round_files(1)
-# mutate_set_round(1)
-# mutate_set_stage(3)
-# mutate_test_event(5)
+mutate_clear_all_round_files(1)
+mutate_set_round(1)
+mutate_set_stage(3)
+mutate_test_event(5)
 # mutate_set_stage(6)
+# print(query_get_round())

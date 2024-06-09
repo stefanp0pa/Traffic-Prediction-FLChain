@@ -22,6 +22,7 @@ RABBITMQ_HOST = 'localhost'
 
 
 AGGREGATOR_DIR = 'aggregator'
+NO_ROUNDS = 10
 
 class Verdict(Enum):
     POSITIVE = 1
