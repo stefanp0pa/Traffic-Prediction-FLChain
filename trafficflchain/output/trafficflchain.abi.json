@@ -429,6 +429,12 @@
             "outputs": []
         },
         {
+            "name": "next_stage",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
             "name": "finalize_session",
             "mutability": "mutable",
             "inputs": [],
