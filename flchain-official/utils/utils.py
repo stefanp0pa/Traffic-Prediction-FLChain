@@ -8,7 +8,7 @@ from scipy.sparse.linalg import eigs
 import os
 import time
 import constants
-from devnet_sc_proxy_trainer import mutate_set_stage, query_get_round, query_get_all_round_files, query_get_file_cluster_node
+from devnet_sc_proxy_trainer import mutate_next_stage, query_get_round, query_get_all_round_files, query_get_file_cluster_node
 
 
 def get_wallet_and_client_addr(WALLETS_DIR_PARTICIPANTS, participant_id):
@@ -101,9 +101,11 @@ def get_client_addr(client_index, file_path):
         return None
 
 
-def advance_stage(next_stage):
+def advance_stage():
+    print("Advance stage")
     time.sleep(30)
-    mutate_set_stage(next_stage)
+    print("Gata sleep-ul")
+    mutate_next_stage()
 
 
 def find_file_name_by_code(code, file_types):

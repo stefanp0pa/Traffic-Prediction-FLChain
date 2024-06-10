@@ -5,8 +5,6 @@ import torch
 import numpy as np
 import os
 import json
-import model.constants as constants 
-
 
 def extract_data_hash(hash, file_path, callback):
     if extract_file(hash, file_path) == None:

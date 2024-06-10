@@ -1,8 +1,8 @@
 from utils.rabbitmq import setup_rabbit
-from utils.utils import upload_file, get_device, get_client_addr, get_wallet_and_client_addr
+from utils.utils import upload_file, get_device, advance_stage, get_wallet_and_client_addr
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, mutate_next_stage, query_get_round
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file
 import constants
 
 def upload_client_file(client, callback):
@@ -44,4 +44,4 @@ def setup_trainer(trained_id):
 
 
 if __name__ == "__main__":
-    create_process([121, 123, 140], setup_trainer, lambda: mutate_next_stage())
+    create_process([121, 123, 140], setup_trainer, lambda: advance_stage())

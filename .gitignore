@@ -26,6 +26,7 @@ flchain-proxy/devnet_sc_proxy_client.py
 flchain-official/cluster_evaluator
 flchain-official/wallets
 .env
+logs.log
 pooling-service.log
 sc-client.log
 flchain-official/aggregator

@@ -55,4 +55,4 @@ def setup_aggregator(aggregator_id):
 
 if __name__ == "__main__":
     # agregate_model(21)
-    create_process([21], setup_aggregator, lambda: advance_stage(6))
+    create_process([21], setup_aggregator, lambda: advance_stage())

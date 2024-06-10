@@ -11,7 +11,7 @@ ERROR_THRESHOLD = constants.ERROR_THRESHOLD
 
 def evaluate_train(cluster_id):
     DEVICE = get_device()
-    wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_EVALUATORS, node_id)
+    wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_EVALUATORS, cluster_id)
     if wallet_path is None:
         return
 
@@ -20,7 +20,7 @@ def evaluate_train(cluster_id):
     evaluator_path = f'{DIR_EVALUATOR}/{cluster_id}/{current_round}'
     create_directory(evaluator_path)
     node_cluster_dict = extract_node_files(cluster_id, evaluator_path, uploaded_files, searched_file_type)
-
+    print(node_cluster_dict)
     for node_id in node_cluster_dict:
         node_files = node_cluster_dict[node_id]
         valid = True
@@ -60,4 +60,4 @@ def setup_trainer_evaluator(trained_evaluator_id):
 
 if __name__ == "__main__":
     # evaluate_train(21)
-    create_process([21], setup_trainer_evaluator, lambda: advance_stage(5))
+    create_process([21], setup_trainer_evaluator, lambda: advance_stage())

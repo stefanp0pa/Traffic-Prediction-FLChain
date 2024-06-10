@@ -12,6 +12,7 @@ ERROR_THRESHOLD = constants.ERROR_THRESHOLD
 
 def evaluate_aggregation(cluster_id):
     wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_EVALUATORS, cluster_id)
+    print(wallet_path)
     DEVICE = get_device()
     training_data, test_data = get_cluster_data(cluster_id, DEVICE)
     cluster_nodes = query_get_all_nodes_per_cluster(cluster_id)
@@ -31,7 +32,7 @@ def evaluate_aggregation(cluster_id):
         status = constants.Verdict.POSITIVE
         print(f"Cluster: {cluster_id} has error: {error}")
         print(f"Cluster: {cluster_id} has a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
-        mutate_evaluate_file(data[f'{constants.File_Type.ClusterAggregationModel.file_name}_hash'], status.code. wallet_path, caller_user_addr)
+        mutate_evaluate_file(data[f'{constants.File_Type.ClusterAggregationModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
 
     kill_current_process()
 
@@ -44,13 +45,11 @@ def setup_aggregator_evaluator(aggregator_evaluator_id):
     setup_rabbit(aggregator_evaluator_id, stages_dict)
 
 
-def next_stage():
-    time.sleep(15)
+def next_round():
+    time.sleep(30)
     mutate_next_round()
-    time.sleep(15)
-    mutate_next_stage()
 
 
 if __name__ == "__main__":
     # evaluate_aggregation(21)
-    create_process([21], setup_aggregator_evaluator, lambda: next_stage())
+    create_process([21], setup_aggregator_evaluator, lambda: next_round())
