@@ -243,7 +243,6 @@ logging.basicConfig(
 	format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 	handlers=[logging.FileHandler(LOGGER_OUTPUT), logging.StreamHandler()]
 )
-logging.disable(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
 def query_get_all_clusters_per_node(node_global_index, caller_user_addr = CALLER_USER_ADDR):
@@ -1372,6 +1371,30 @@ def mutate_next_round(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
 
+def mutate_next_stage(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
+	try:
+		signer = UserSigner.from_pem_file(Path(wallet_path))
+		user_addr = Address.from_bech32(caller_user_addr)
+		nonce_holder = AccountNonceHolder(network_provider.get_account(user_addr).nonce)
+		call_transaction = sc_factory.create_transaction_for_execute(
+			sender=user_addr,
+			contract=contract_address,
+			function="next_stage",
+			gas_limit=gas_limit,
+			arguments=[]
+		)
+		local_nonce = nonce_cache.get(caller_user_addr, -1)
+		gateway_nonce = nonce_holder.get_nonce_then_increment()
+		curr_nonce = max(local_nonce, gateway_nonce) # the higher value is the right one
+		nonce_cache[caller_user_addr] = curr_nonce + 1 # setting the next nonce value
+		call_transaction.nonce = curr_nonce
+		call_transaction.signature = signer.sign(transaction_computer.compute_bytes_for_signing(call_transaction))
+		logger.info(f'>>>Performing mutable call to next_stage for user address: {caller_user_addr}...')
+		response = network_provider.send_transaction(call_transaction)
+		logger.info(f'>>>Transaction hash: {response}')
+	except Exception as e:
+		logger.error(f'Error in the executing the transaction: {e}')
+
 def mutate_finalize_session(wallet_path = WALLET_PATH, caller_user_addr = CALLER_USER_ADDR, gas_limit = GAS_LIMIT):
 	try:
 		signer = UserSigner.from_pem_file(Path(wallet_path))
@@ -1476,3 +1499,4 @@ def mutate_test_event(event_type, wallet_path = WALLET_PATH, caller_user_addr = 
 		logger.info(f'>>>Transaction hash: {response}')
 	except Exception as e:
 		logger.error(f'Error in the executing the transaction: {e}')
+

@@ -1,15 +1,9 @@
 from utils.rabbitmq import setup_rabbit
-from utils.utils import upload_file, get_device, get_client_addr, advance_stage
+from utils.utils import upload_file, get_device, get_client_addr, get_wallet_and_client_addr
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, query_get_cluster_aggregation_model, query_get_round
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file, mutate_next_stage, query_get_round
 import constants
-
-WALLET_DIR="wallets"
-WALLET_DIR_ADDRESS_FILE="wallets_addr"
-WALLETS_DIR_TRAINERS="trainers"
-WORK_DIR="/home/robert/Desktop/Facultate/Licenta/Traffic-Prediction-FLChain/flchain-official"
-
 
 def upload_client_file(client, callback):
     model_save_path = client.get_last_model_file()
@@ -20,12 +14,8 @@ def upload_client_file(client, callback):
 
 def train_model(node_id):
     DEVICE = get_device()
-    current_round = query_get_round()
-    wallet_path = f"{WORK_DIR}/{WALLET_DIR}/{WALLETS_DIR_TRAINERS}/{node_id}.pem"
-    wallet_addres = f"{WORK_DIR}/{WALLET_DIR}/{WALLET_DIR_ADDRESS_FILE}/{WALLETS_DIR_TRAINERS}"
-    
-    caller_user_addr = get_client_addr(node_id, wallet_addres)
-    if caller_user_addr is None:
+    wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_TRAINERS, node_id)
+    if wallet_path is None:
         return
 
     clusters = query_get_all_clusters_per_node(node_id, caller_user_addr)
@@ -54,6 +44,4 @@ def setup_trainer(trained_id):
 
 
 if __name__ == "__main__":
-    # train_model(140)
-    for i in range(0, constants.NO_ROUNDS): 
-        create_process([121, 123, 140], setup_trainer, lambda: advance_stage(4))
+    create_process([121, 123, 140], setup_trainer, lambda: mutate_next_stage())

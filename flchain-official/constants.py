@@ -20,6 +20,15 @@ TRANSACTION_STATUS = {
 
 RABBITMQ_HOST = 'localhost'
 
+WALLET_DIR="wallets"
+WALLET_DIR_ADDRESS_FILE="wallets_addr"
+WALLETS_DIR_TRAINERS="trainers"
+WALLETS_DIR_AGGREGATORS="aggregators"
+WALLETS_DIR_EVALUATORS="evaluators"
+WORK_DIR="/home/robert/Desktop/Facultate/Licenta/Traffic-Prediction-FLChain/flchain-official"
+DIR_TRAINER_EVALUATOR = 'node_evaluator'
+DIR_AGGREGATOR_EVALUATOR = 'cluster_evaluator'
+ERROR_THRESHOLD = 0.03
 
 AGGREGATOR_DIR = 'aggregator'
 NO_ROUNDS = 10

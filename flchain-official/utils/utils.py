@@ -7,7 +7,23 @@ import torch
 from scipy.sparse.linalg import eigs
 import os
 import time
+import constants
 from devnet_sc_proxy_trainer import mutate_set_stage, query_get_round, query_get_all_round_files, query_get_file_cluster_node
+
+
+def get_wallet_and_client_addr(WALLETS_DIR_PARTICIPANTS, participant_id):
+    WALLET_DIR=constants.WALLET_DIR
+    WALLET_DIR_ADDRESS_FILE=constants.WALLET_DIR_ADDRESS_FILE
+    WORK_DIR=constants.WORK_DIR
+
+    wallet_path = f"{WORK_DIR}/{WALLET_DIR}/{WALLETS_DIR_PARTICIPANTS}/{participant_id}.pem"
+    wallet_addres = f"{WORK_DIR}/{WALLET_DIR}/{WALLET_DIR_ADDRESS_FILE}/{WALLETS_DIR_PARTICIPANTS}"
+    
+    caller_user_addr = get_client_addr(participant_id, wallet_addres)
+    if caller_user_addr is None:
+        raise Exception(f'Caller address for participant with id:{participant_id} wasn\'t found')
+
+    return wallet_path, caller_user_addr
 
 
 def generate_random_string(length):

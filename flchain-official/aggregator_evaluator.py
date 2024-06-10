@@ -1,16 +1,17 @@
 from utils.rabbitmq import setup_rabbit
-from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files, advance_stage
+from utils.utils import get_device, create_directory, extract_node_files, extract_evaluated_files, get_wallet_and_client_addr
 from utils.process import create_process, kill_current_process
 from utils.model import initiate_model_from_hash, get_cluster_data
 import torch
 import constants
 import time
-from devnet_sc_proxy_trainer import mutate_evaluate_file, query_get_all_nodes_per_cluster, mutate_set_round, query_get_round, mutate_set_stage, mutate_next_round
+from devnet_sc_proxy_trainer import mutate_evaluate_file, query_get_all_nodes_per_cluster, mutate_next_round, mutate_next_stage
 
-DIR_EVALUATOR = 'cluster_evaluator'
-ERROR_THRESHOLD = 0.03
+DIR_EVALUATOR = constants.DIR_AGGREGATOR_EVALUATOR
+ERROR_THRESHOLD = constants.ERROR_THRESHOLD
 
 def evaluate_aggregation(cluster_id):
+    wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_EVALUATORS, cluster_id)
     DEVICE = get_device()
     training_data, test_data = get_cluster_data(cluster_id, DEVICE)
     cluster_nodes = query_get_all_nodes_per_cluster(cluster_id)
@@ -30,7 +31,7 @@ def evaluate_aggregation(cluster_id):
         status = constants.Verdict.POSITIVE
         print(f"Cluster: {cluster_id} has error: {error}")
         print(f"Cluster: {cluster_id} has a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
-        mutate_evaluate_file(data[f'{constants.File_Type.ClusterAggregationModel.file_name}_hash'], status.code)
+        mutate_evaluate_file(data[f'{constants.File_Type.ClusterAggregationModel.file_name}_hash'], status.code. wallet_path, caller_user_addr)
 
     kill_current_process()
 
@@ -46,10 +47,10 @@ def setup_aggregator_evaluator(aggregator_evaluator_id):
 def next_stage():
     time.sleep(15)
     mutate_next_round()
-    advance_stage(3)
+    time.sleep(15)
+    mutate_next_stage()
 
 
 if __name__ == "__main__":
     # evaluate_aggregation(21)
-    for i in range(constants.NO_ROUNDS):
-        create_process([21], setup_aggregator_evaluator, lambda: next_stage())
+    create_process([21], setup_aggregator_evaluator, lambda: next_stage())
