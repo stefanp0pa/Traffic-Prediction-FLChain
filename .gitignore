@@ -25,6 +25,9 @@ flchain-official/devnet_sc_proxy_trainer.py
 flchain-proxy/devnet_sc_proxy_client.py
 flchain-official/cluster_evaluator
 flchain-official/wallets
+flchain-official/aggregated_models/
+flchain-official/tracking_files/
+flchain-official/tracking_nodes/
 .env
 logs.log
 pooling-service.log

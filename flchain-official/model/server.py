@@ -4,12 +4,15 @@ from torch import nn
 import model.constants as constants
 from datetime import datetime
 from utils.utils import create_directory
+import os
 
 class Server:
     
     def __init__(self, cluster, round):
         self.cluster = cluster
         self.round = round
+        self.file_path = f'aggregated_models/{cluster}'
+        create_directory('aggregated_models')
         self.__global_model = None
         self.__local_model = []
 
@@ -42,6 +45,9 @@ class Server:
         model = self.__global_model
         model['signature'] = timestamp
         torch.save(model, self.save_path)
+        file_size = os.path.getsize(self.save_path)
+        with open(self.file_path, 'a') as file:
+            file.write(f'Round: {self.round} Aggregated file size has: {file_size} Bytes\n') 
 
 
     def get_global_model(self):

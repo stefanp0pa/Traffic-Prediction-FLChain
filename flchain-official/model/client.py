@@ -8,6 +8,7 @@ from datetime import datetime
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from utils.utils import scaled_Laplacian, cheb_polynomial, create_directory
 import copy
+import os
 
 def create_dataloaders(field, target, data, DEVICE, shuffle=False):
     train = data[field]
@@ -21,7 +22,7 @@ def create_dataloaders(field, target, data, DEVICE, shuffle=False):
 
 class Client:
 
-    def __init__(self, node, cluster, cluster_index, adj_matrix, data, DEVICE) -> None:
+    def __init__(self, node, cluster, cluster_index, adj_matrix, data, DEVICE, round) -> None:
         self.__node = node
         self.__adj_matrix = adj_matrix
         self.DEVICE = DEVICE
@@ -32,6 +33,11 @@ class Client:
         self.__test_target_tensor = self.__test_target_tensor.cpu().numpy()
         self.__mean = data['mean']
         self.__std = data['std']
+        self.file_name = f'tracking_nodes/{node}_{cluster}'
+        self.file_size = f'tracking_files/{node}_{cluster}'
+        self.round = round
+        create_directory('tracking_nodes')
+        create_directory('tracking_files')
         self.create_model()
     
     
@@ -144,12 +150,14 @@ class Client:
                 best_acc = avg_loss
                 self.best_model = copy.deepcopy(self.model)
 
-            print(f"Node: {self.get_node()}, Cluster: {self.get_cluster()} Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}")
-
+            text = f"Round: {self.round} Node: {self.get_node()}, Cluster: {self.get_cluster()} Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}\n"
+            with open(self.file_name, 'a') as file:
+                file.write(text)
+            print(text)
         self.save_best_model()
 
 
-    def save_best_model(self):
+    def save_best_model(self, type_file = 'footprint'):
         save_directory = f"{constants.model_save_directory}/{self.__node}_{self.cluster}"
         create_directory(save_directory)
         now = datetime.now()
@@ -158,6 +166,9 @@ class Client:
         model = self.best_model.state_dict()
         model['signature'] = timestamp
         torch.save(model, self.save_path)
+        file_size = os.path.getsize(self.save_path)
+        with open(self.file_size, 'a') as file:
+            file.write(f'Round: {self.round} {type_file} size has: {file_size} Bytes\n') 
         
 
     def get_node(self):

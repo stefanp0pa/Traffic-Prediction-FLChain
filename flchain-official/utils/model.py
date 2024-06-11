@@ -1,5 +1,5 @@
 from utils.utils import extract_file, generate_random_string
-from devnet_sc_proxy_trainer import query_get_training_data, query_get_all_nodes_per_cluster
+from devnet_sc_proxy_trainer import query_get_training_data, query_get_all_nodes_per_cluster, query_get_round
 from model.client import Client, create_dataloaders
 import torch
 import numpy as np
@@ -60,6 +60,7 @@ def get_cluster_data(cluster_id, DEVICE):
 
 
 def initiate_model_from_hash(node_id, cluster, DEVICE, is_global = False):
+    current_round = query_get_round()
     unhash_data = load_data_per_node(node_id, cluster)
     if unhash_data is None:
         return None
@@ -67,10 +68,10 @@ def initiate_model_from_hash(node_id, cluster, DEVICE, is_global = False):
     cluster_index = unhash_data['cluster_index']
     if is_global == True:
         cluster_index = 0
-    client = Client(node_id, cluster, cluster_index, unhash_data['matrix']['matrix'] ,unhash_data['dataset'],DEVICE)
+    client = Client(node_id, cluster, cluster_index, unhash_data['matrix']['matrix'], unhash_data['dataset'], DEVICE, current_round)
     if 'node_index' in unhash_data['my_model']:
         del unhash_data['my_model']['node_index']
         del unhash_data['my_model']['cluster_index']
-    
+    # print(unhash_data['my_model'])
     client.load_model(unhash_data['my_model'], unhash_data['cluster_model'])
     return client

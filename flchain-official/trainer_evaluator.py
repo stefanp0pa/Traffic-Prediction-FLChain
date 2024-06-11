@@ -11,10 +11,6 @@ ERROR_THRESHOLD = constants.ERROR_THRESHOLD
 
 def evaluate_train(cluster_id):
     DEVICE = get_device()
-    wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_EVALUATORS, cluster_id)
-    if wallet_path is None:
-        return
-
     searched_file_type = [constants.File_Type.CandidateModel, constants.File_Type.FootprintModel]
     uploaded_files, current_round = extract_evaluated_files(searched_file_type)
     evaluator_path = f'{DIR_EVALUATOR}/{cluster_id}/{current_round}'
@@ -33,6 +29,10 @@ def evaluate_train(cluster_id):
         if valid is not True:
             continue
         
+        wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_TRAINERS, node_id)
+        if wallet_path is None:
+            return
+
         client = initiate_model_from_hash(node_id, cluster_id, DEVICE)
         footprint_model = torch.load(f'{evaluator_path}/{constants.File_Type.FootprintModel.file_name}_{node_id}.pth')
         candidate_model = torch.load(f'{evaluator_path}/{constants.File_Type.CandidateModel.file_name}_{node_id}.pth')
@@ -45,7 +45,7 @@ def evaluate_train(cluster_id):
 
         print(f"Node: {node_id} has candidate file with a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
         mutate_evaluate_file(node_files[f'{constants.File_Type.CandidateModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
-        mutate_evaluate_file(node_files[f'{constants.File_Type.FootprintModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
+        # mutate_evaluate_file(node_files[f'{constants.File_Type.FootprintModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
 
     kill_current_process()
 

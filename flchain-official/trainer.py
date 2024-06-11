@@ -8,7 +8,7 @@ import constants
 def upload_client_file(client, callback):
     model_save_path = client.get_last_model_file()
     file_hash = upload_file(model_save_path)
-    print(f"File hash:{file_hash}")
+    # print(f"File hash:{file_hash}")
     callback(file_hash)
 
 
@@ -26,10 +26,11 @@ def train_model(node_id):
         client = initiate_model_from_hash(node_id, cluster, DEVICE)
         if client is None:
             continue
+        print("Antreneaza BOBITA")
         client.train()
 
         upload_client_file(client, lambda file_hash: mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
-        client.save_best_model()
+        client.save_best_model('candidate')
         upload_client_file(client, lambda file_hash: mutate_upload_candidate_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
 
     kill_current_process()

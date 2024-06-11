@@ -31,7 +31,7 @@ DIR_AGGREGATOR_EVALUATOR = 'cluster_evaluator'
 ERROR_THRESHOLD = 0.03
 
 AGGREGATOR_DIR = 'aggregator'
-NO_ROUNDS = 10
+NO_ROUNDS = 5
 
 class Verdict(Enum):
     POSITIVE = 1
