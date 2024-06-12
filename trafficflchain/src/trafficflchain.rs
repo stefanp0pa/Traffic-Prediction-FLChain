@@ -5,12 +5,10 @@ multiversx_sc::derive_imports!();
 
 mod role;
 mod filetype;
-mod evaluation_status;
 mod stage;
 
 use role::Role;
 use filetype::FileType;
-use evaluation_status::EvaluationStatus;
 use stage::Stage;
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
@@ -60,7 +58,7 @@ pub struct File {
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, ManagedVecItem)]
 pub struct Evaluation<M: ManagedTypeApi> {
     evaluator: ManagedAddress<M>,
-    status: EvaluationStatus,
+    status: u16,
 }
 
 const DEFAULT_NODE: u16 = 9999u16;
@@ -335,7 +333,7 @@ pub trait Trafficflchain {
 
     // Evaluation ------------------------------------------------------------
     #[endpoint]
-    fn evaluate_file(&self, file_location: [u8; 46], status: EvaluationStatus) {
+    fn evaluate_file(&self, file_location: [u8; 46], status: u16) {
         let caller = self.blockchain().get_caller();
         if self.files(file_location.clone()).is_empty() {
             sc_panic!("File does not exist!");
@@ -602,7 +600,7 @@ pub trait Trafficflchain {
         let test_file_type = FileType::ClusterAggregationModel;
         let test_round = 89;
         let test_reputation = 656;
-        let test_evaluation_status = EvaluationStatus::Positive;
+        let test_evaluation_status = 777u16;
         let test_file_location: [u8; 46] = "QmUPW6vbfbTW7LGDMy6QrzxLRHMkUBAdVAfTCQKUuQj999".as_bytes().try_into().unwrap();
         let test_node_index: u16 = 7213u16;
         let test_cluster_index: u16 = 1234u16;
@@ -683,7 +681,7 @@ pub trait Trafficflchain {
     fn evaluate_file_event(
         &self,
         #[indexed] file_location: [u8; 46],
-        #[indexed] status: EvaluationStatus,
+        #[indexed] status: u16,
         #[indexed] evaluator: ManagedAddress);
     
     #[event("reputation_updated_event")]
