@@ -196,11 +196,11 @@ def base64_string_to_list_evaluations(encoded_string):
     if not encoded_string:
         return []
     decoded_bytes = base64_string_to_hex_string(encoded_string)
-    evaluation_size = 66 # 64 bytes + 2 bytes
+    evaluation_size = 68 # 64 bytes + 4 bytes
     evaluations = []
     for i in range(0, len(decoded_bytes), evaluation_size):
         evaluations.append({
             'evaluator': hex_string_to_bech32_address(decoded_bytes[i:i + 64]),
-            'evaluation': hex_string_to_numeric(decoded_bytes[i + 64:i + 66])
+            'evaluation': hex_string_to_numeric(decoded_bytes[i + 64:i + 68])
         })
     return evaluations
