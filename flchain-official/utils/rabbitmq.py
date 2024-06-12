@@ -31,7 +31,6 @@ def stage_callback(participant_id, stages_dict, ch, method, properties, body):
             if payload['identifier'] == 'set_stage_event':
                 stage = payload['stage']
                 if stage not in stages_dict:
-                    print(f"Stage:{stage} is not available for trainer mode")
                     return
                 stages_dict[stage](participant_id)
         

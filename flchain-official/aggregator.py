@@ -31,17 +31,21 @@ def agregate_model(cluster_id):
                 if no_approve > length/2:
                     models_file_path.append(file_path)
 
-    for file_path in models_file_path:
-        data = torch.load(file_path)
-        if 'signature' in data:
-            del data['signature']
-        server.get_client_model(data)
+    no_files_verified = len(models_file_path)
+    print(no_files_verified)
+    # if no_files_verified != 0:
+    #     for file_path in models_file_path:
+    #         data = torch.load(file_path)
+    #         if 'signature' in data:
+    #             del data['signature']
+    #         server.get_client_model(data)
 
-    server.aggregate()
-    server.save_model()
-    file_hash = upload_file(server.save_path)
-    print(f"File hash:{file_hash}")
-    mutate_upload_cluster_aggregation_file(file_hash, cluster_id, wallet_path, caller_user_addr)
+    
+    #     server.aggregate()
+    #     server.save_model()
+    #     file_hash = upload_file(server.save_path)
+    #     # print(f"File hash:{file_hash}")
+    #     mutate_upload_cluster_aggregation_file(file_hash, cluster_id, wallet_path, caller_user_addr)
     kill_current_process()
 
 
@@ -54,5 +58,5 @@ def setup_aggregator(aggregator_id):
 
 
 if __name__ == "__main__":
-    # agregate_model(21)
-    create_process([21], setup_aggregator, lambda: advance_stage())
+    agregate_model(9)
+    # create_process([9], setup_aggregator, lambda: advance_stage())

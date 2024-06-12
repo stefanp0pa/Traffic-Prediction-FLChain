@@ -16,7 +16,7 @@ def evaluate_train(cluster_id):
     evaluator_path = f'{DIR_EVALUATOR}/{cluster_id}/{current_round}'
     create_directory(evaluator_path)
     node_cluster_dict = extract_node_files(cluster_id, evaluator_path, uploaded_files, searched_file_type)
-    print(node_cluster_dict)
+    file_result = []
     for node_id in node_cluster_dict:
         node_files = node_cluster_dict[node_id]
         valid = True
@@ -38,13 +38,25 @@ def evaluate_train(cluster_id):
         candidate_model = torch.load(f'{evaluator_path}/{constants.File_Type.CandidateModel.file_name}_{node_id}.pth')
         client.load_model(footprint_model, candidate_model)
         error = client.evaluate()
-        # status = constants.Verdict.NEGATIVE
-        # if error < ERROR_THRESHOLD:
-        print(f"Node: {node_id} Cluster: {cluster_id} has error: {error}")
-        status = constants.Verdict.POSITIVE
-
+        file_result.append({'error': error, 'file_hash':node_files[f'{constants.File_Type.CandidateModel.file_name}_hash'], 'node_id':node_id, 'wallet_path': wallet_path, 'caller_user_addr': caller_user_addr})
+        
+    file_result = sorted(file_result, key=lambda x: x['error'])
+    lowest_error = file_result[0]['error']
+    for result in file_result:
+        node_id = result['node_id']
+        error = result['error']
+        wallet_path = result['wallet_path']
+        caller_user_addr = result['caller_user_addr']
+        hash = result['file_hash']
+        status = constants.Verdict.NEGATIVE
+        if error - lowest_error <= 0.01:
+            status = constants.Verdict.POSITIVE
+        
+        with open(f'trainer_evaluator/{node_id}', 'a') as file:
+            file.write(f"Round: {current_round} Node: {node_id} Cluster: {cluster_id} has error: {error}\n") 
+        print(f"Round: {current_round} Node: {node_id} Cluster: {cluster_id} has error: {error}")
         print(f"Node: {node_id} has candidate file with a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
-        mutate_evaluate_file(node_files[f'{constants.File_Type.CandidateModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
+        mutate_evaluate_file(hash, status.code, wallet_path, caller_user_addr)
         # mutate_evaluate_file(node_files[f'{constants.File_Type.FootprintModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
 
     kill_current_process()
@@ -60,4 +72,5 @@ def setup_trainer_evaluator(trained_evaluator_id):
 
 if __name__ == "__main__":
     # evaluate_train(21)
-    create_process([21], setup_trainer_evaluator, lambda: advance_stage())
+    create_directory('trainer_evaluator')
+    create_process([9], setup_trainer_evaluator, lambda: advance_stage())

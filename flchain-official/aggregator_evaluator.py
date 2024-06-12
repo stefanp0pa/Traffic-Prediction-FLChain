@@ -12,7 +12,6 @@ ERROR_THRESHOLD = constants.ERROR_THRESHOLD
 
 def evaluate_aggregation(cluster_id):
     wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_EVALUATORS, cluster_id)
-    print(wallet_path)
     DEVICE = get_device()
     training_data, test_data = get_cluster_data(cluster_id, DEVICE)
     cluster_nodes = query_get_all_nodes_per_cluster(cluster_id)
@@ -29,7 +28,12 @@ def evaluate_aggregation(cluster_id):
         candidate_model = torch.load(f'{evaluator_path}/{constants.File_Type.ClusterAggregationModel.file_name}_{key}.pth')
         client.load_model(candidate_model, candidate_model)
         error = client.evaluate(test_data)
+        # status = constants.Verdict.NEGATIVE
+        # if error < ERROR_THRESHOLD or current_round <= 3:
         status = constants.Verdict.POSITIVE
+
+        with open(f'aggregator_evalutor/{cluster_id}', 'a') as file:
+            file.write(f"Round: {current_round} Cluster: {cluster_id} has error: {error}\n") 
         print(f"Cluster: {cluster_id} has error: {error}")
         print(f"Cluster: {cluster_id} has a {'Positive' if status == constants.Verdict.POSITIVE else 'Negative'} status")
         mutate_evaluate_file(data[f'{constants.File_Type.ClusterAggregationModel.file_name}_hash'], status.code, wallet_path, caller_user_addr)
@@ -52,4 +56,5 @@ def next_round():
 
 if __name__ == "__main__":
     # evaluate_aggregation(21)
-    create_process([21], setup_aggregator_evaluator, lambda: next_round())
+    create_directory('aggregator_evalutor/')
+    create_process([9], setup_aggregator_evaluator, lambda: next_round())

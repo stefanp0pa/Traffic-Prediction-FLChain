@@ -28,10 +28,10 @@ WALLETS_DIR_EVALUATORS="evaluators"
 WORK_DIR="/home/robert/Desktop/Facultate/Licenta/Traffic-Prediction-FLChain/flchain-official"
 DIR_TRAINER_EVALUATOR = 'node_evaluator'
 DIR_AGGREGATOR_EVALUATOR = 'cluster_evaluator'
-ERROR_THRESHOLD = 0.03
+ERROR_THRESHOLD = 0.05
 
 AGGREGATOR_DIR = 'aggregator'
-NO_ROUNDS = 5
+NO_ROUNDS = 25
 
 class Verdict(Enum):
     POSITIVE = 1

@@ -20,7 +20,7 @@ BLOCK_COMMIT_DELAY = 6
 LATEST_TX_COUNT = 50
 TX_PAGE_SIZE = 50
 
-SC_ADDR = 'erd1qqqqqqqqqqqqqpgqhq5rwx3effnxvllgpyettrpkwj7a5uyhch8qqmz30z'
+SC_ADDR = 'erd1qqqqqqqqqqqqqpgq3fx434vuswz3qsf54kg8w0uxqzqx5dvfch8qcf53r6'
 SC_ABI_ADDR = '/home/robert/Desktop/Facultate/Licenta//Traffic-Prediction-FLChain/trafficflchain/output/trafficflchain.abi.json'
 
 TRANSFERS_PATH = 'transfers'

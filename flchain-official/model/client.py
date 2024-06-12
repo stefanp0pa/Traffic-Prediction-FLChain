@@ -153,7 +153,7 @@ class Client:
             text = f"Round: {self.round} Node: {self.get_node()}, Cluster: {self.get_cluster()} Epoch:{epoch} loss:{training_loss/len(self.__train_loader)}\n"
             with open(self.file_name, 'a') as file:
                 file.write(text)
-            print(text)
+            print(text, end='')
         self.save_best_model()
 
 

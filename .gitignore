@@ -28,6 +28,8 @@ flchain-official/wallets
 flchain-official/aggregated_models/
 flchain-official/tracking_files/
 flchain-official/tracking_nodes/
+flchain-official/aggregator_evalutor/
+flchain-official/trainer_evaluator/
 .env
 logs.log
 pooling-service.log
