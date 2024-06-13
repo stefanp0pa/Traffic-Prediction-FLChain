@@ -11,7 +11,7 @@ SC_ADDR="erd1qqqqqqqqqqqqqpgq3fx434vuswz3qsf54kg8w0uxqzqx5dvfch8qcf53r6"
 
 BYTECODE="$PROJECT_PATH/trafficflchain/output/trafficflchain.wasm"
 
-MASTER_ADDR="erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz"
+MASTER_ADDR="erd1dwlm0pazs43q0sad8h3r7ueehlzjmhyyq9spryaxruhvfgwych8qgydtwz" 
 DWARF_ADDR="erd12zjr9k2wae68are9rmz7z6hphyestwgf6m6utuqdndgchc3vyvvs0g3zlg"
 
 build_contract() {
@@ -29,16 +29,16 @@ deploy_contract() {
         --metadata-payable \
         --proxy=${PROXY} --chain=${CHAIN_ID} \
         --arguments 0xaa 0x16 \
-        --outfile="deploy-devnet.interaction.json" --send || return
+        --send
 
-    TRANSACTION=$(mxpy data parse --file="deploy-devnet.interaction.json" --expression="data['emittedTransactionHash']")
-    SC_ADDR=$(mxpy data parse --file="deploy-devnet.interaction.json" --expression="data['contractAddress']")
+    # TRANSACTION=$(mxpy data parse --file="deploy-devnet.interaction.json" --expression="data['emittedTransactionHash']")
+    # SC_ADDR=$(mxpy data parse --file="deploy-devnet.interaction.json" --expression="data['contractAddress']")
 
-    mxpy data store --key=address-devnet --value=${SC_ADDR}
-    mxpy data store --key=deployTransaction-devnet --value=${TRANSACTION}
+    # mxpy data store --key=address-devnet --value=${SC_ADDR}
+    # mxpy data store --key=deployTransaction-devnet --value=${TRANSACTION}
 
-    echo ""
-    echo "Smart contract address: ${SC_ADDR}"
+    # echo ""
+    # echo "Smart contract address: ${SC_ADDR}"
 }
 
 upgrade_contract() {
