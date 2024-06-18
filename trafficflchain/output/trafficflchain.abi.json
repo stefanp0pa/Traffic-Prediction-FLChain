@@ -342,7 +342,7 @@
                 },
                 {
                     "name": "status",
-                    "type": "EvaluationStatus"
+                    "type": "u16"
                 }
             ],
             "outputs": []
@@ -424,6 +424,18 @@
         },
         {
             "name": "next_round",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "next_stage",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "finalize_session",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
@@ -842,7 +854,7 @@
                 },
                 {
                     "name": "status",
-                    "type": "EvaluationStatus",
+                    "type": "u16",
                     "indexed": true
                 },
                 {
@@ -893,24 +905,7 @@
                 },
                 {
                     "name": "status",
-                    "type": "EvaluationStatus"
-                }
-            ]
-        },
-        "EvaluationStatus": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "Undefined",
-                    "discriminant": 0
-                },
-                {
-                    "name": "Positive",
-                    "discriminant": 1
-                },
-                {
-                    "name": "Negative",
-                    "discriminant": 2
+                    "type": "u16"
                 }
             ]
         },

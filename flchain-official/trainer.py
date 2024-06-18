@@ -1,49 +1,52 @@
-import sys
-import json
 from utils.rabbitmq import setup_rabbit
-from utils.utils import upload_file, get_device
-from utils.model import create_model_from_hash
-from model.client import Client
-from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, query_get_training_data, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file
-
-DEVICE = get_device()
-trainer_id = int(sys.argv[1])
+from utils.utils import upload_file, get_device, advance_stage, get_wallet_and_client_addr
+from utils.process import create_process, kill_current_process
+from utils.model import initiate_model_from_hash
+from devnet_sc_proxy_trainer import query_get_all_clusters_per_node, mutate_upload_footprint_model_file, mutate_upload_candidate_model_file
+import constants
+import time
 
 def upload_client_file(client, callback):
     model_save_path = client.get_last_model_file()
     file_hash = upload_file(model_save_path)
-    print(f"File hash:{file_hash}")
+    # print(f"File hash:{file_hash}")
     callback(file_hash)
 
 
-def train_model():
-    print("Incepe antrenamentul bobita")
-    clusters = query_get_all_clusters_per_node(trainer_id)
-    if clusters is None:
-        return
+def train_model(node_id):
+    try:
+        DEVICE = get_device()
+        wallet_path, caller_user_addr = get_wallet_and_client_addr(constants.WALLETS_DIR_TRAINERS, node_id)
+        if wallet_path is None:
+            return
 
-    for cluster in clusters:
-        response = query_get_training_data(trainer_id, cluster)
-        if response is None:
-            pass
-    
-        body = json.loads(json.dumps(response))
-        unhash_data = create_model_from_hash(body)
-        client = Client(trainer_id, cluster, unhash_data['cluster_index'], unhash_data['matrix']['matrix'] ,unhash_data['dataset'],DEVICE)
-        if 'node_index' in unhash_data['my_model']:
-            del unhash_data['my_model']['node_index']
-            del unhash_data['my_model']['cluster_index']
+        clusters = query_get_all_clusters_per_node(node_id, caller_user_addr)
+        if clusters is None:
+            return
 
-        client.load_model(unhash_data['my_model'], unhash_data['cluster_model'])
-        client.train()
-       
-        upload_client_file(client, lambda file_hash: mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster()) )
-        client.save_best_model()
-        upload_client_file(client, lambda file_hash: mutate_upload_candidate_model_file(file_hash, client.get_cluster()) )
-       
+        for cluster in clusters:
+            client = initiate_model_from_hash(node_id, cluster, DEVICE)
+            if client is None:
+                continue
+            client.train()
 
-if __name__ == "__main__":
+            upload_client_file(client, lambda file_hash: mutate_upload_footprint_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
+            client.save_best_model('candidate')
+            upload_client_file(client, lambda file_hash: mutate_upload_candidate_model_file(file_hash, client.get_node(), client.get_cluster(), wallet_path, caller_user_addr))
+
+        kill_current_process()
+    except Exception as e:
+        print(f"Has an error {node_id}")
+        time.sleep(30)
+        train_model(node_id)
+
+def setup_trainer(trained_id):
+    print(f"Trainer {trained_id} ready")
     stages_dict = {
         3:train_model
     }
-    setup_rabbit(stages_dict)
+    setup_rabbit(trained_id, stages_dict)
+
+
+if __name__ == "__main__":
+    create_process([33, 32, 31, 155, 34, 161, 110, 160, 26], setup_trainer, lambda: advance_stage())

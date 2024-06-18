@@ -5,6 +5,27 @@ import numpy as np
 import os
 import torch
 from scipy.sparse.linalg import eigs
+import os
+import time
+import constants
+from devnet_sc_proxy_trainer import mutate_next_stage, query_get_round, query_get_all_round_files, query_get_file_cluster_node
+import random
+
+
+def get_wallet_and_client_addr(WALLETS_DIR_PARTICIPANTS, participant_id):
+    WALLET_DIR=constants.WALLET_DIR
+    WALLET_DIR_ADDRESS_FILE=constants.WALLET_DIR_ADDRESS_FILE
+    WORK_DIR=constants.WORK_DIR
+
+    wallet_path = f"{WORK_DIR}/{WALLET_DIR}/{WALLETS_DIR_PARTICIPANTS}/{participant_id}.pem"
+    wallet_addres = f"{WORK_DIR}/{WALLET_DIR}/{WALLET_DIR_ADDRESS_FILE}/{WALLETS_DIR_PARTICIPANTS}"
+    
+    caller_user_addr = get_client_addr(participant_id, wallet_addres)
+    if caller_user_addr is None:
+        raise Exception(f'Caller address for participant with id:{participant_id} wasn\'t found')
+
+    return wallet_path, caller_user_addr
+
 
 def generate_random_string(length):
     characters = string.ascii_letters + string.digits
@@ -35,6 +56,7 @@ def extract_file(ipfs_hash, file_path):
 def create_directory(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
 
 def scaled_Laplacian(W):
     # L = D-W
@@ -69,3 +91,67 @@ def get_device():
     DEVICE = torch.device('cuda:0')
     print("CUDA:", USE_CUDA, DEVICE)
     return DEVICE
+
+
+def get_client_addr(client_index, file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        if 0 < client_index <= len(lines):
+            line = lines[client_index - 1]
+            return line.rstrip('\n')
+        return None
+
+
+def advance_stage():
+    print("Advance stage")
+    time.sleep(30)
+    print("Gata sleep-ul")
+    mutate_next_stage()
+
+
+def find_file_name_by_code(code, file_types):
+    for file_type in file_types:
+        if file_type.code == code:
+            return file_type.file_name
+    return None
+
+
+def extract_evaluated_files(file_type):
+    current_round = query_get_round()
+    uploaded_files = query_get_all_round_files(current_round)
+    uploaded_files = [file for file in uploaded_files if 'file_type' in file and find_file_name_by_code(file['file_type'], file_type) is not None]
+    uploaded_files.reverse()
+    return uploaded_files, current_round
+
+
+def extract_node_files(cluster_id, dir_path, uploaded_files, searched_type_files):
+    node_cluster_dict = {}
+    for file in uploaded_files:
+        hash = file['file_location']
+        details = query_get_file_cluster_node(hash)
+        node_id = details['global_node_index']
+        cluster_index = details['cluster_index']
+        type = find_file_name_by_code(file['file_type'], searched_type_files)
+        file_path = f'{dir_path}/{type}_{node_id}.pth'
+
+        if type is None:
+            continue
+
+        if cluster_id != cluster_index:
+            continue
+        
+        if node_id not in node_cluster_dict:
+            node_cluster_dict[node_id] = {}
+
+        if type in node_cluster_dict[node_id]:
+            continue
+
+        succes = extract_file(hash, file_path)
+        if succes is None:
+            print(f'Error: File with hash: {hash} for node: {node_id} is not available')
+            continue
+        
+        node_cluster_dict[node_id][type] = file_path
+        node_cluster_dict[node_id][f"{type}_hash"] = hash
+
+    return node_cluster_dict

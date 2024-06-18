@@ -5,12 +5,10 @@ multiversx_sc::derive_imports!();
 
 mod role;
 mod filetype;
-mod evaluation_status;
 mod stage;
 
 use role::Role;
 use filetype::FileType;
-use evaluation_status::EvaluationStatus;
 use stage::Stage;
 
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone)]
@@ -60,7 +58,7 @@ pub struct File {
 #[derive(NestedEncode, NestedDecode, TopEncode, TopDecode, TypeAbi, Clone, ManagedVecItem)]
 pub struct Evaluation<M: ManagedTypeApi> {
     evaluator: ManagedAddress<M>,
-    status: EvaluationStatus,
+    status: u16,
 }
 
 const DEFAULT_NODE: u16 = 9999u16;
@@ -295,17 +293,27 @@ pub trait Trafficflchain {
         if self.cluster_adj_matrices(cluster_index).is_empty() {
             sc_panic!("Cluster adjacency matrix does not exist!");
         }
+
         let data_addr = self.node_datasets(global_node_index, cluster_index).get();
         if self.node_datasets(global_node_index, cluster_index).is_empty() {
             sc_panic!("Dataset does not exist!");
         }
         let prev_round = self.round().get() - 1; // this usually fails because we forget to set round > 0
+        // ideally, there should be no gaps in aggregated cluster models, each round should post a new aggregate model
         let prev_aggr_model = self.aggregation_models(cluster_index, prev_round).get();
         if self.aggregation_models(cluster_index, prev_round).is_empty() {
             sc_panic!("No previous aggregated model to use!");
         }
 
-        let footprint_model_addr = self.footprint_models(global_node_index, cluster_index, prev_round).get();
+        // if there are any gaps in footprints, will retrieve the latest available
+        let mut latest_available_footprint_round = prev_round;
+        for round_iter in (0..prev_round).rev() {
+            if !self.footprint_models(global_node_index, cluster_index, round_iter).is_empty() {
+                latest_available_footprint_round = round_iter;
+                break;
+            }
+        }
+        let footprint_model_addr = self.footprint_models(global_node_index, cluster_index, latest_available_footprint_round).get();
 
         let local_node_index = self.cluster_nodes(cluster_index)
             .iter().find(|cn| cn.global_node_index == global_node_index).unwrap().local_node_index;
@@ -318,14 +326,14 @@ pub trait Trafficflchain {
             dataset_addr: data_addr,
             aggr_cluster_model_addr: prev_aggr_model,
             footprind_model_addr: footprint_model_addr,
-            local_node_index
+            local_node_index: local_node_index
         }
     }
 
 
     // Evaluation ------------------------------------------------------------
     #[endpoint]
-    fn evaluate_file(&self, file_location: [u8; 46], status: EvaluationStatus) {
+    fn evaluate_file(&self, file_location: [u8; 46], status: u16) {
         let caller = self.blockchain().get_caller();
         if self.files(file_location.clone()).is_empty() {
             sc_panic!("File does not exist!");
@@ -434,13 +442,40 @@ pub trait Trafficflchain {
         output
     }
 
-
     // ROUNDS AND STAGES ----------------------------------------------------
     #[endpoint]
     fn next_round(&self) {
-        // TODO: the caller should be checked before executing this method
         self.round().update(|round| { *round += 1 });
         self.set_round_event(self.round().get());
+        self.stage().set(Stage::ModelTraining);
+        self.set_stage_event(Stage::ModelTraining);
+    }
+
+    // Our current stage sequence is the following: 
+    // Initialization -> Model Training -> Evaluation Candidates -> Model Aggregation -> Evaluation Aggregation
+    // this endpoint should be used only cautiosly, only for certain stages
+    #[endpoint]
+    fn next_stage(&self) {
+        let curr_stage = self.stage().get();
+        let next_stage = match curr_stage {
+            Stage::Initialization => Stage::ModelTraining,
+            Stage::ModelTraining => Stage::EvaluationCandidates,
+            Stage::EvaluationCandidates => Stage::ModelAggregation,
+            Stage::ModelAggregation => Stage::EvaluationAggregation,
+            _ => Stage::Undefined
+        };
+        self.stage().set(next_stage);
+        self.set_stage_event(next_stage);
+    }
+
+    #[endpoint]
+    fn finalize_session(&self) {
+        // NOTE: we do not clear files here, those are cleared manually
+        // The intuition is that you want to resume to this data afterwards for future sanity checks
+        self.round().set(0);
+        self.set_round_event(0);
+        self.stage().set(Stage::Undefined);
+        self.set_stage_event(Stage::Undefined);
     }
 
     #[endpoint]
@@ -565,7 +600,7 @@ pub trait Trafficflchain {
         let test_file_type = FileType::ClusterAggregationModel;
         let test_round = 89;
         let test_reputation = 656;
-        let test_evaluation_status = EvaluationStatus::Positive;
+        let test_evaluation_status = 777u16;
         let test_file_location: [u8; 46] = "QmUPW6vbfbTW7LGDMy6QrzxLRHMkUBAdVAfTCQKUuQj999".as_bytes().try_into().unwrap();
         let test_node_index: u16 = 7213u16;
         let test_cluster_index: u16 = 1234u16;
@@ -646,7 +681,7 @@ pub trait Trafficflchain {
     fn evaluate_file_event(
         &self,
         #[indexed] file_location: [u8; 46],
-        #[indexed] status: EvaluationStatus,
+        #[indexed] status: u16,
         #[indexed] evaluator: ManagedAddress);
     
     #[event("reputation_updated_event")]

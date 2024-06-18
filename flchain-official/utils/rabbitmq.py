@@ -24,24 +24,24 @@ def init_rabbit(queues, callbacks):
         print(f"Error:{e}")
 
 
-def stage_callback(stages_dict, ch, method, properties, body):
+def stage_callback(participant_id, stages_dict, ch, method, properties, body):
         try:
             payload = json.loads(body.decode())
             payload = json.loads(payload)
             if payload['identifier'] == 'set_stage_event':
                 stage = payload['stage']
                 if stage not in stages_dict:
-                    print(f"Stage:{stage} is not available for trainer mode")
                     return
-                stages_dict[stage]()
+                stages_dict[stage](participant_id)
         
         except Exception as e:
             print(f"Error: {e}")
 
-def setup_rabbit(stages_dict):
+
+def setup_rabbit(participant_id, stages_dict):
     WORKER_NAME = generate_random_string(10)
     queues_name = [f"{WORKER_NAME}-set_stage_event"]
-    callbacks = [partial(stage_callback, stages_dict)]
+    callbacks = [partial(stage_callback, participant_id, stages_dict)]
     init_rabbit(queues=queues_name, callbacks=callbacks)
 
    
